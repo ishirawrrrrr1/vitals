@@ -1466,6 +1466,7 @@ const startServer = async () => {
             updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
           )
         `);
+        await pool.query("ALTER TABLE users MODIFY COLUMN id INT NOT NULL AUTO_INCREMENT");
         await pool.query("ALTER TABLE users MODIFY COLUMN role VARCHAR(50) DEFAULT 'Patient'");
         await addColumnIfMissing('users', 'age', 'VARCHAR(50) DEFAULT NULL');
         await addColumnIfMissing('users', 'gender', 'VARCHAR(50) DEFAULT NULL');
