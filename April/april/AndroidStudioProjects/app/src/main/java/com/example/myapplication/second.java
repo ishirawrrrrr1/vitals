@@ -88,13 +88,10 @@ public class second extends AppCompatActivity {
     private void performSignup(String name, String email, String password, String role, String age, String gender, String stroke) {
         SignupRequest request = new SignupRequest(name, email, password, role, age, gender, stroke);
         android.content.SharedPreferences prefs = getSharedPreferences(LoginActivity.PREFS_NAME, MODE_PRIVATE);
-        String savedIp = prefs.getString(LoginActivity.KEY_SERVER_IP, "");
+        String savedIp = prefs.getString(LoginActivity.KEY_SERVER_IP, RetrofitClient.getBaseUrl());
 
         if (savedIp == null || savedIp.trim().isEmpty()) {
-            saveUserLocally(name, email, password, role);
-            Toast.makeText(this, "No server IP saved. Account created locally.", Toast.LENGTH_LONG).show();
-            finish();
-            return;
+            savedIp = RetrofitClient.getBaseUrl();
         }
 
         RetrofitClient.discoverPort(getApplicationContext(), savedIp, new RetrofitClient.PortDiscoveryCallback() {
@@ -105,9 +102,7 @@ public class second extends AppCompatActivity {
 
             @Override
             public void onDiscoveryFailed() {
-                saveUserLocally(name, email, password, role);
-                Toast.makeText(second.this, "Server unreachable. Account created locally.", Toast.LENGTH_LONG).show();
-                finish();
+                Toast.makeText(second.this, "Backend unreachable. Account was not created.", Toast.LENGTH_LONG).show();
             }
         });
     }
@@ -119,7 +114,6 @@ public class second extends AppCompatActivity {
             @Override
             public void onResponse(Call<SignupResponse> call, Response<SignupResponse> response) {
                 if (response.isSuccessful() && response.body() != null && response.body().success) {
-                    saveUserLocally(name, email, password, role);
                     Toast.makeText(second.this, "Account Created! Please Login.", Toast.LENGTH_SHORT).show();
                     finish();
                 } else {
@@ -133,9 +127,7 @@ public class second extends AppCompatActivity {
 
             @Override
             public void onFailure(Call<SignupResponse> call, Throwable t) {
-                saveUserLocally(name, email, password, role);
-                Toast.makeText(second.this, "Server Offline. Account Created LOCALLY for Offline Mode.", Toast.LENGTH_LONG).show();
-                finish();
+                Toast.makeText(second.this, "Backend unavailable. Account was not created.", Toast.LENGTH_LONG).show();
             }
         });
     }
