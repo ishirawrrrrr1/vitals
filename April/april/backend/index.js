@@ -237,9 +237,12 @@ app.post('/api/auth/register', async (req, res) => {
 
     try {
         const finalRole = role || 'Patient';
+        const [idRows] = await pool.query('SELECT COALESCE(MAX(id), 0) + 1 AS nextId FROM users');
+        const nextId = idRows[0]?.nextId || 1;
+
         await pool.query(
-            'INSERT INTO users (username, email, password, role, age, gender, stroke_duration) VALUES (?, ?, ?, ?, ?, ?, ?)',
-            [username, email, password, finalRole, age || null, gender || null, stroke_duration || null]
+            'INSERT INTO users (id, username, email, password, role, age, gender, stroke_duration) VALUES (?, ?, ?, ?, ?, ?, ?, ?)',
+            [nextId, username, email, password, finalRole, age || null, gender || null, stroke_duration || null]
         );
         
         // Notify Hub Dashboard in real-time
@@ -1466,7 +1469,6 @@ const startServer = async () => {
             updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
           )
         `);
-        await pool.query("ALTER TABLE users MODIFY COLUMN id INT NOT NULL AUTO_INCREMENT");
         await pool.query("ALTER TABLE users MODIFY COLUMN role VARCHAR(50) DEFAULT 'Patient'");
         await addColumnIfMissing('users', 'age', 'VARCHAR(50) DEFAULT NULL');
         await addColumnIfMissing('users', 'gender', 'VARCHAR(50) DEFAULT NULL');
