@@ -877,7 +877,8 @@ app.post('/api/sessions/start', verifyToken, async (req, res) => {
     const userId = req.body.user_id || req.body.userId;
     const intensity = req.body.intensity || 'MED';
     const durationMins = req.body.duration_mins || req.body.durationMins || 5;
-    const sessionRole = req.body.role || req.user?.role || 'Technician';
+    const requestedRole = req.body.role || req.user?.role || 'Technician';
+    const sessionRole = ['Admin', 'Technician'].includes(requestedRole) ? requestedRole : 'Technician';
     const patientName = req.body.patient_name || req.body.patientName || 'Unknown Patient';
     
     try {
