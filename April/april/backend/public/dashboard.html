@@ -76,11 +76,11 @@
             <div class="vitals-card">
                 <span class="card-label">Blood Pressure</span>
                 <div class="card-value-group">
-                    <span id="bp-val" class="card-value">120/80</span>
+                    <span id="bp-val" class="card-value">--/--</span>
                     <span class="card-unit">mmHg</span>
                 </div>
                 <div class="card-status" style="color: var(--text-muted)">
-                    ESTIMATED
+                    DATABASE
                 </div>
             </div>
         </div>
@@ -157,7 +157,12 @@
         // Simulate Cardiac Waveform based on BPM
         let wavePhase = 0;
         function updateWaveform(bpm) {
-            if (!bpm) bpm = 75;
+            if (!bpm) {
+                chart.data.datasets[0].data.shift();
+                chart.data.datasets[0].data.push(0);
+                chart.update();
+                return;
+            }
             const frequency = bpm / 60; // beats per second
             const step = (Math.PI * 2 * frequency) / 10; // Adjust for 10fps
             
@@ -184,14 +189,43 @@
             document.getElementById('status-text').innerText = 'OFFLINE';
         });
 
-        socket.on('vitals_update', (data) => {
+        function applyVitals(data) {
+            if (!data) return;
+            if (data.metric) {
+                const metric = String(data.metric).toLowerCase();
+                const value = data.value;
+                if (metric.includes('heart') || metric.includes('bpm')) data = { heart_rate: Math.round(Number(value) || 0) };
+                else if (metric.includes('spo2') || metric.includes('oxygen')) data = { spo2: Math.round(Number(value) || 0) };
+                else if (metric.includes('temp')) data = { body_temp: Number(value || 0).toFixed(1) };
+                else if (metric.includes('blood') || metric === 'bp' || metric.includes('pressure')) data = { blood_pressure: String(value || '') };
+            }
             if (data.heart_rate) {
                 document.getElementById('hr-val').innerText = data.heart_rate;
                 document.getElementById('session-tag').style.display = 'inline';
             }
             if (data.spo2) document.getElementById('spo2-val').innerText = data.spo2;
             if (data.body_temp) document.getElementById('temp-val').innerText = data.body_temp;
-        });
+            if (data.blood_pressure) document.getElementById('bp-val').innerText = data.blood_pressure;
+            if (data.bp_sys && data.bp_dia) document.getElementById('bp-val').innerText = `${data.bp_sys}/${data.bp_dia}`;
+        }
+
+        async function loadLatestVitals() {
+            const token = localStorage.getItem('token') || localStorage.getItem('auth_token');
+            if (!token) return;
+            try {
+                const response = await fetch('/api/admin/vitals?limit=40', {
+                    headers: { Authorization: `Bearer ${token}` }
+                });
+                if (!response.ok) return;
+                const rows = await response.json();
+                if (Array.isArray(rows)) rows.reverse().forEach(applyVitals);
+            } catch (error) {
+                console.warn('latest vitals unavailable', error);
+            }
+        }
+
+        socket.on('vitals_update', applyVitals);
+        socket.on('vital_update', applyVitals);
 
         socket.on('hub_status', (data) => {
             if (data.connected) {
@@ -214,11 +248,16 @@
 
         // Start waveform simulation
         setInterval(() => {
-            const bpm = parseInt(document.getElementById('hr-val').innerText) || 75;
+            const bpm = parseInt(document.getElementById('hr-val').innerText) || 0;
             updateWaveform(bpm);
         }, 100);
 
-        window.onload = initChart;
+        window.loadLatestVitals = loadLatestVitals;
+        window.onload = () => {
+            initChart();
+            loadLatestVitals();
+            setInterval(loadLatestVitals, 3000);
+        };
     </script>
 </body>
 </html>

@@ -341,17 +341,36 @@ app.post('/api/auth/login', async (req, res) => {
 
 // Update Profile
 app.put('/api/auth/profile', verifyToken, async (req, res) => {
-    const { email, password } = req.body;
+    const { username, email, password, age, gender, stroke_duration } = req.body;
     const userId = req.user.id;
 
     try {
+        const [existingRows] = await pool.query('SELECT username, email, age, gender, stroke_duration FROM users WHERE id = ?', [userId]);
+        if (existingRows.length === 0) return res.status(404).json({ success: false, message: 'User not found' });
+        const existing = existingRows[0];
+        const nextUsername = username || existing.username;
+        const nextEmail = email || existing.email;
+        const nextAge = age !== undefined ? age : existing.age;
+        const nextGender = gender !== undefined ? gender : existing.gender;
+        const nextStroke = stroke_duration !== undefined ? stroke_duration : existing.stroke_duration;
+
         if (password) {
-            await pool.query('UPDATE users SET email = ?, password = ? WHERE id = ?', [email, password, userId]);
+            await pool.query(
+                'UPDATE users SET username = ?, email = ?, password = ?, age = ?, gender = ?, stroke_duration = ? WHERE id = ?',
+                [nextUsername, nextEmail, password, nextAge, nextGender, nextStroke, userId]
+            );
         } else {
-            await pool.query('UPDATE users SET email = ? WHERE id = ?', [email, userId]);
+            await pool.query(
+                'UPDATE users SET username = ?, email = ?, age = ?, gender = ?, stroke_duration = ? WHERE id = ?',
+                [nextUsername, nextEmail, nextAge, nextGender, nextStroke, userId]
+            );
         }
-        
-        res.json({ success: true, message: 'Profile updated' });
+
+        const [rows] = await pool.query(
+            'SELECT id, username, email, role, age, gender, stroke_duration, profile_photo_url FROM users WHERE id = ?',
+            [userId]
+        );
+        res.json({ success: true, message: 'Profile updated', user: rows[0] });
     } catch (err) {
         console.error(err);
         res.status(500).json({ message: 'Error updating profile' });
@@ -361,7 +380,7 @@ app.put('/api/auth/profile', verifyToken, async (req, res) => {
 app.get('/api/auth/me', verifyToken, async (req, res) => {
     try {
         const [rows] = await pool.query(
-            'SELECT id, username, email, role, age, gender, stroke_duration FROM users WHERE id = ?',
+            'SELECT id, username, email, role, age, gender, stroke_duration, profile_photo_url FROM users WHERE id = ?',
             [req.user.id]
         );
         if (rows.length === 0) return res.status(404).json({ success: false, message: 'User not found' });
@@ -377,10 +396,13 @@ app.post('/api/auth/profile-photo', verifyToken, upload.single('photo'), async (
     if (!req.file) return res.status(400).json({ message: 'No photo provided' });
     
     console.log(`\x1b[35m[HUB] Profile Photo Uploaded: ${req.file.filename}\x1b[0m`);
+    const photoUrl = `/uploads/${req.file.filename}`;
+    await pool.query('UPDATE users SET profile_photo_url = ? WHERE id = ?', [photoUrl, req.user.id]);
     res.json({ 
         success: true, 
         message: 'Photo uploaded', 
-        url: `/uploads/${req.file.filename}` 
+        url: photoUrl,
+        profile_photo_url: photoUrl
     });
 });
 
@@ -644,10 +666,61 @@ app.post('/api/sensor/upload', async (req, res) => {
 
         // REAL-TIME PUSH: Notify App/Dashboard
         io.emit('vital_update', { sensor_type, metric, value, unit });
+        const numericValue = Number(value);
+        if (Number.isFinite(numericValue)) {
+            const normalized = String(metric || '').toLowerCase();
+            const payload = { timestamp: new Date().toISOString(), status: 'ACTIVE' };
+            if (normalized.includes('heart') || normalized.includes('bpm')) payload.heart_rate = Math.round(numericValue);
+            if (normalized.includes('spo2') || normalized.includes('oxygen')) payload.spo2 = Math.round(numericValue);
+            if (normalized.includes('temp')) payload.body_temp = Number(numericValue.toFixed(1));
+            if (payload.heart_rate || payload.spo2 || payload.body_temp) io.emit('vitals_update', payload);
+        }
 
         res.json({ success: true, message: 'Sensor data accepted' });
     } catch (err) {
         console.error(`[SENSOR_UPLOAD_ERROR] ${err.message}`);
+        res.status(500).json({ success: false });
+    }
+});
+
+app.get('/api/sensor/latest', async (req, res) => {
+    try {
+        const [rows] = await pool.query("SELECT * FROM vitals ORDER BY timestamp DESC LIMIT 50");
+        const latest = {
+            heart_rate: 0,
+            spo2: 0,
+            body_temp: 0,
+            blood_pressure: "",
+            bp_sys: 0,
+            bp_dia: 0,
+            timestamp: new Date().toISOString()
+        };
+
+        for (const row of rows) {
+            const metric = String(row.metric || row.sensor_type || '').toLowerCase();
+            const value = Number(row.value);
+            if (!latest.heart_rate && Number.isFinite(value) && (metric.includes('heart') || metric.includes('bpm'))) {
+                latest.heart_rate = Math.round(value);
+            } else if (!latest.spo2 && Number.isFinite(value) && (metric.includes('spo2') || metric.includes('oxygen'))) {
+                latest.spo2 = Math.round(value);
+            } else if (!latest.body_temp && Number.isFinite(value) && metric.includes('temp')) {
+                latest.body_temp = Number(value.toFixed(1));
+            } else if (!latest.bp_sys && Number.isFinite(value) && (metric.includes('bp_sys') || metric.includes('systolic'))) {
+                latest.bp_sys = Math.round(value);
+            } else if (!latest.bp_dia && Number.isFinite(value) && (metric.includes('bp_dia') || metric.includes('diastolic'))) {
+                latest.bp_dia = Math.round(value);
+            } else if (!latest.blood_pressure && (metric.includes('blood') || metric.includes('pressure') || metric.includes('bp'))) {
+                latest.blood_pressure = String(row.value || row.blood_pressure || '');
+            }
+        }
+
+        if (!latest.blood_pressure && latest.bp_sys > 0 && latest.bp_dia > 0) {
+            latest.blood_pressure = `${latest.bp_sys}/${latest.bp_dia}`;
+        }
+
+        res.json(latest);
+    } catch (err) {
+        console.error(`[SENSOR_LATEST_ERROR] ${err.message}`);
         res.status(500).json({ success: false });
     }
 });
@@ -1550,6 +1623,7 @@ const startServer = async () => {
         await addColumnIfMissing('users', 'age', 'VARCHAR(50) DEFAULT NULL');
         await addColumnIfMissing('users', 'gender', 'VARCHAR(50) DEFAULT NULL');
         await addColumnIfMissing('users', 'stroke_duration', 'VARCHAR(100) DEFAULT NULL');
+        await addColumnIfMissing('users', 'profile_photo_url', 'VARCHAR(255) DEFAULT NULL');
         await pool.query("ALTER TABLE monitoring_sessions MODIFY COLUMN intensity VARCHAR(100) DEFAULT 'MED'");
 
         // Create default admin user if no users exist
@@ -1769,6 +1843,17 @@ io.on('connection', (socket) => {
             io.to(hardwareSid).emit('hardware_command', { command: cmd });
         } else if (port && port.isOpen) {
             port.write(cmd + "\n"); // Fallback to Serial
+        } else {
+            pendingCommands.push({
+                command: cmd,
+                source: 'socket_app_command',
+                timestamp: new Date()
+            });
+            io.emit('hardware_log', {
+                timestamp: new Date().toLocaleTimeString(),
+                level: 'QUEUE',
+                message: `Queued command for ESP32 polling: ${cmd}`
+            });
         }
     });
 
@@ -1864,52 +1949,64 @@ async function processHardwareData(raw) {
 
     try {
         // 1. Proactive Event Logging (Safety Checked)
-        const level = data.startsWith("DATA:") ? "DATA" : (data.startsWith("SYS:") ? "SYS" : "INFO");
+        const level = data.startsWith("{") ? "DATA" : (data.startsWith("SYS:") ? "SYS" : "INFO");
         await logHardwareEvent(data, level);
 
         if (!pool || !pool.query) return;
 
         // 2. Handle System Messages
-        if (data.startsWith("DATA:STATUS:ONLINE")) {
+        if (data.startsWith("STATUS:ONLINE")) {
             await pool.query("UPDATE sensors SET status='ONLINE', last_seen=CURRENT_TIMESTAMP WHERE sensor_type='Arduino_Hub'");
             return;
         }
 
-        // 3. Handle Clinical Data (Format: DATA:Metric:Value OR DATA:{JSON})
-        if (data.startsWith("DATA:")) {
-            const inner = data.substring(5).trim();
-            
-            // NEW: Handle JSON Vitals (Standard for v6.8+)
-            if (inner.startsWith("{")) {
-                try {
-                    const json = JSON.parse(inner);
-                    const hr = json.heart_rate || json.BPM;
-                    const spo2 = json.spo2 || json.SPO2;
-                    const temp = json.body_temp || json.temperature;
+        // 3. Handle Clinical Data (Format after cleaner: {JSON} or Metric:Value)
+        if (data.startsWith("{")) {
+            try {
+                const json = JSON.parse(data);
+                const hr = json.heart_rate || json.BPM || json.hr || json.HR;
+                const spo2 = json.spo2 || json.SPO2;
+                const temp = json.body_temp || json.temperature || json.temp;
+                const bp = json.blood_pressure || json.BP || "";
 
-                    if (hr) sensorBuffer.heart_rate.push(parseFloat(hr));
-                    if (spo2) sensorBuffer.spo2.push(parseFloat(spo2));
-                    if (temp) sensorBuffer.body_temp.push(parseFloat(temp));
+                if (hr) sensorBuffer.heart_rate.push(parseFloat(hr));
+                if (spo2) sensorBuffer.spo2.push(parseFloat(spo2));
+                if (temp) sensorBuffer.body_temp.push(parseFloat(temp));
 
-                    console.log(`[RELAY_JSON] HR:${hr} SpO2:${spo2}% Temp:${temp}C`);
-                } catch (e) {
-                    console.error("[RELAY_PARSE_ERR] JSON Invalid:", inner);
-                }
-                return;
+                const payload = {
+                    heart_rate: Number(hr) || 0,
+                    spo2: Number(spo2) || 0,
+                    body_temp: Number(temp) || 0,
+                    blood_pressure: String(bp || ""),
+                    status: 'ACTIVE',
+                    timestamp: new Date().toISOString()
+                };
+                io.emit('vitals_update', payload);
+                console.log(`[RELAY_JSON] HR:${payload.heart_rate} SpO2:${payload.spo2}% Temp:${payload.body_temp}C`);
+            } catch (e) {
+                console.error("[RELAY_PARSE_ERR] JSON Invalid:", data);
             }
-
-            // Fallback: Handle Legacy Metric:Value (Format: DATA:Metric:Value)
+            return;
+        }
+        if (data.includes(":")) {
+            // Fallback: Handle Legacy Metric:Value.
             const parts = data.split(":");
-            if (parts.length < 3) return;
+            if (parts.length < 2) return;
 
-            const metric = parts[1].toUpperCase();
-            const value = parseFloat(parts[2]);
+            const metric = parts[0].toUpperCase();
+            const value = parseFloat(parts[1]);
             if (isNaN(value)) return;
 
             // --- RELAY BUFFERING ---
             if (metric.includes("BPM") || metric.includes("MAX")) sensorBuffer.heart_rate.push(value);
             else if (metric.includes("SPO2")) sensorBuffer.spo2.push(value);
             else if (metric.includes("TEMP")) sensorBuffer.body_temp.push(value);
+
+            const payload = { status: 'ACTIVE', timestamp: new Date().toISOString() };
+            if (metric.includes("BPM") || metric.includes("MAX") || metric.includes("HEART")) payload.heart_rate = Math.round(value);
+            else if (metric.includes("SPO2") || metric.includes("OXYGEN")) payload.spo2 = Math.round(value);
+            else if (metric.includes("TEMP")) payload.body_temp = Number(value.toFixed(1));
+            if (payload.heart_rate || payload.spo2 || payload.body_temp) io.emit('vitals_update', payload);
 
             console.log(`[RELAY_LEGACY] ${metric} -> ${value}`);
         } 
