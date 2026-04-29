@@ -94,6 +94,12 @@ public class second extends AppCompatActivity {
             savedIp = RetrofitClient.getBaseUrl();
         }
 
+        if (RetrofitClient.isFullUrl(savedIp)) {
+            RetrofitClient.init(getApplicationContext(), savedIp);
+            attemptRemoteSignup(request, name, email, password, role);
+            return;
+        }
+
         RetrofitClient.discoverPort(getApplicationContext(), savedIp, new RetrofitClient.PortDiscoveryCallback() {
             @Override
             public void onPortFound(String url) {

@@ -71,7 +71,7 @@ public class RetrofitClient {
                 @Override
                 public void run() {
                     try {
-                        Request request = new Request.Builder().url(baseUrl + "api/admin/stats").build();
+                        Request request = new Request.Builder().url(baseUrl + "api/health").build();
                         Response response = client.newCall(request).execute();
                         if (response.isSuccessful() || response.code() == 401 || response.code() == 403) {
                             new android.os.Handler(android.os.Looper.getMainLooper()).post(new Runnable() {
