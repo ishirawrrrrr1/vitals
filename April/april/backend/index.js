@@ -60,6 +60,27 @@ app.get('/dashboard.html/admin', (req, res) => res.sendFile(path.join(__dirname,
 
 app.use(express.static('public'));
 
+app.get('/api/health', async (req, res) => {
+    const db = { ready: dbReady };
+
+    if (dbReady && pool && pool.query) {
+        try {
+            const [rows] = await pool.query('SELECT 1 AS ok');
+            db.ok = rows?.[0]?.ok === 1;
+        } catch (err) {
+            db.ok = false;
+            db.error = err.message;
+        }
+    }
+
+    res.json({
+        success: true,
+        service: 'vitals-backend',
+        commit: process.env.RAILWAY_GIT_COMMIT_SHA || process.env.RAILWAY_DEPLOYMENT_ID || 'local',
+        db
+    });
+});
+
 const dbConfig = {
   host: process.env.DB_HOST || process.env.MYSQLHOST || 'localhost',
   port: Number(process.env.DB_PORT || process.env.MYSQLPORT || 3306),
@@ -71,6 +92,7 @@ const dbConfig = {
 const JWT_SECRET = process.env.JWT_SECRET || 'your_secret_key_change_this';
 
 let pool;
+let dbReady = false;
 let pendingCommands = [];
 let activeDevices = new Map(); // Track Socket.io IDs for hardware
 let hardwareLogs = []; // Buffer for the [Window 4] Hardware Console (In-memory fallback)
@@ -202,6 +224,10 @@ const verifyAdmin = (req, res, next) => {
 
 // Register
 app.post('/api/auth/register', async (req, res) => {
+    if (!dbReady || !pool || !pool.query) {
+        return res.status(503).json({ success: false, message: 'Database is not connected. Check Railway MySQL variables and redeploy.' });
+    }
+
     const { email, password, role, age, gender, stroke_duration } = req.body;
     const username = req.body.username || req.body.name;
     
@@ -239,6 +265,10 @@ app.post('/api/auth/register', async (req, res) => {
 
 // Login
 app.post('/api/auth/login', async (req, res) => {
+    if (!dbReady || !pool || !pool.query) {
+        return res.status(503).json({ success: false, message: 'Database is not connected. Check Railway MySQL variables and redeploy.' });
+    }
+
     const username = req.body.username || req.body.email;
     const password = req.body.password;
     
@@ -1529,7 +1559,9 @@ const startServer = async () => {
                 [dev.name, dev.pin]
             );
         }
+        dbReady = true;
     } catch (err) {
+        dbReady = false;
         console.error('[DB_ERROR]', err.message);
         console.log('[INFO] Starting server in OFFLINE MODE (No database functionality).');
         pool = { query: async () => [[]] };
