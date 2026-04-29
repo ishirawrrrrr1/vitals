@@ -258,7 +258,12 @@ app.post('/api/auth/register', async (req, res) => {
         if (err.code === 'ER_DUP_ENTRY') {
             res.status(400).json({ success: false, message: 'This email is already registered.' });
         } else {
-            res.status(500).json({ success: false, message: 'Server error during registration.' });
+            res.status(500).json({
+                success: false,
+                message: 'Server error during registration.',
+                error_code: err.code,
+                error_detail: err.sqlMessage || err.message
+            });
         }
     }
 });
