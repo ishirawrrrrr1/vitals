@@ -211,14 +211,22 @@
 
         async function loadLatestVitals() {
             const token = localStorage.getItem('token') || localStorage.getItem('auth_token');
-            if (!token) return;
             try {
-                const response = await fetch('/api/admin/vitals?limit=40', {
-                    headers: { Authorization: `Bearer ${token}` }
-                });
-                if (!response.ok) return;
-                const rows = await response.json();
-                if (Array.isArray(rows)) rows.reverse().forEach(applyVitals);
+                const latestResponse = await fetch('/api/sensor/latest');
+                if (latestResponse.ok) {
+                    const latest = await latestResponse.json();
+                    applyVitals(latest);
+                }
+
+                if (token) {
+                    const response = await fetch('/api/admin/vitals?limit=40', {
+                        headers: { Authorization: `Bearer ${token}` }
+                    });
+                    if (response.ok) {
+                        const rows = await response.json();
+                        if (Array.isArray(rows)) rows.reverse().forEach(applyVitals);
+                    }
+                }
             } catch (error) {
                 console.warn('latest vitals unavailable', error);
             }
