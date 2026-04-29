@@ -16,7 +16,7 @@ import retrofit2.converter.gson.GsonConverterFactory;
 
 public class RetrofitClient {
     private static Retrofit retrofit = null;
-    private static String BASE_URL = "http://192.168.1.4:3000/";
+    private static String BASE_URL = "https://vitals-production-e304.up.railway.app/";
     private static Context appContext;
 
     public static String getBaseUrl() {

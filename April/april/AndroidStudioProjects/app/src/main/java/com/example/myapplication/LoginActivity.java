@@ -105,7 +105,7 @@ public class LoginActivity extends AppCompatActivity {
             rememberMe.setChecked(true);
         }
         
-        String savedIp = sharedPreferences.getString(KEY_SERVER_IP, "https://your-backend.up.railway.app/");
+        String savedIp = sharedPreferences.getString(KEY_SERVER_IP, "https://vitals-production-e304.up.railway.app/");
         if (serverIpEdit != null) serverIpEdit.setText(savedIp);
 
         signup.setOnClickListener(v -> {

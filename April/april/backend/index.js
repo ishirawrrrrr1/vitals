@@ -202,7 +202,7 @@ const verifyAdmin = (req, res, next) => {
 
 // Register
 app.post('/api/auth/register', async (req, res) => {
-    const { email, password, role } = req.body;
+    const { email, password, role, age, gender, stroke_duration } = req.body;
     const username = req.body.username || req.body.name;
     
     if (!username || !email || !password) {
@@ -210,10 +210,10 @@ app.post('/api/auth/register', async (req, res) => {
     }
 
     try {
-        const finalRole = role || 'patient';
+        const finalRole = role || 'Patient';
         await pool.query(
-            'INSERT INTO users (username, email, password, role) VALUES (?, ?, ?, ?)',
-            [username, email, password, finalRole]
+            'INSERT INTO users (username, email, password, role, age, gender, stroke_duration) VALUES (?, ?, ?, ?, ?, ?, ?)',
+            [username, email, password, finalRole, age || null, gender || null, stroke_duration || null]
         );
         
         // Notify Hub Dashboard in real-time
@@ -290,7 +290,15 @@ app.post('/api/auth/login', async (req, res) => {
         res.json({
             success: true,
             token,
-            user: { id: user.id, username: user.username, email: user.email, role: user.role }
+            user: {
+                id: user.id,
+                username: user.username,
+                email: user.email,
+                role: user.role,
+                age: user.age || '',
+                gender: user.gender || '',
+                stroke_duration: user.stroke_duration || ''
+            }
         });
     } catch (err) {
         console.error('[LOGIN_ERROR]', err);
@@ -1385,11 +1393,20 @@ const startServer = async () => {
             username VARCHAR(100) NOT NULL UNIQUE,
             email VARCHAR(100) NOT NULL UNIQUE,
             password VARCHAR(255) NOT NULL,
-            role ENUM('admin', 'technician') DEFAULT 'technician',
+            role VARCHAR(50) DEFAULT 'Patient',
+            age VARCHAR(50) DEFAULT NULL,
+            gender VARCHAR(50) DEFAULT NULL,
+            stroke_duration VARCHAR(100) DEFAULT NULL,
             created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
             updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
           )
-        `);        // Create default admin user if no users exist
+        `);
+        await pool.query("ALTER TABLE users MODIFY COLUMN role VARCHAR(50) DEFAULT 'Patient'");
+        await pool.query("ALTER TABLE users ADD COLUMN IF NOT EXISTS age VARCHAR(50) DEFAULT NULL");
+        await pool.query("ALTER TABLE users ADD COLUMN IF NOT EXISTS gender VARCHAR(50) DEFAULT NULL");
+        await pool.query("ALTER TABLE users ADD COLUMN IF NOT EXISTS stroke_duration VARCHAR(100) DEFAULT NULL");
+
+        // Create default admin user if no users exist
         const result = await pool.query('SELECT COUNT(*) as count FROM users');
         const users = Array.isArray(result) ? result[0] : result;
         if (users && users[0] && users[0].count === 0) {
