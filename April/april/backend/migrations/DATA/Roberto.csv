@@ -1,0 +1,31 @@
+Date,Patient_Name,Age_Range,Gender,Stroke_Duration,Session_Type,Avg_Heart_Rate,Avg_Temp_C,Avg_SpO2,Hand_Level,Foot_Level,HII_Recovery_Index,Weekly_Improvement_Pct,Clinical_Status
+3/30/2026,Roberto,51-60 yrs,Male,Long-term(2y+),Initial Assessment,73,36.8,97%,1,1,3.7,0.00%,Baseline Established
+3/31/2026,Roberto,51-60 yrs,Male,Long-term(2y+),Daily Therapy,80,37.1,99%,2,1,3.8,7.76%,Stable
+4/1/2026,Roberto,51-60 yrs,Male,Long-term(2y+),Daily Therapy,78,37.1,99%,2,1,3.9,5.26%,Stable
+4/2/2026,Roberto,51-60 yrs,Male,Long-term(2y+),Daily Therapy,78,37.1,98%,2,1,4,11.69%,Stable
+4/3/2026,Roberto,51-60 yrs,Male,Long-term(2y+),Daily Therapy,73,36.7,99%,2,1,4.1,10.06%,Stable
+4/4/2026,Roberto,51-60 yrs,Male,Long-term(2y+),Daily Therapy,75,37.1,98%,2,1,4.1,11.24%,Stable
+4/5/2026,Roberto,51-60 yrs,Male,Long-term(2y+),Weekly Review,75,37.1,98%,3,1,4.2,11.17%,Stable
+4/6/2026,Roberto,51-60 yrs,Male,Long-term(2y+),Daily Therapy,77,36.8,99%,3,1,4.3,11.68%,Stable
+4/7/2026,Roberto,51-60 yrs,Male,Long-term(2y+),Daily Therapy,75,37,98%,3,1,4.4,4.14%,Stable
+4/8/2026,Roberto,51-60 yrs,Male,Long-term(2y+),Daily Therapy,75,36.8,99%,3,1,4.5,11.18%,Stable
+4/9/2026,Roberto,51-60 yrs,Male,Long-term(2y+),Daily Therapy,80,37,98%,3,1,4.5,6.74%,Stable
+4/10/2026,Roberto,51-60 yrs,Male,Long-term(2y+),Daily Therapy,79,36.8,99%,3,1,4.5,3.26%,Improving
+4/11/2026,Roberto,51-60 yrs,Male,Long-term(2y+),Daily Therapy,74,36.8,99%,4,1,4.6,2.43%,Improving
+4/12/2026,Roberto,51-60 yrs,Male,Long-term(2y+),Weekly Review,77,36.8,98%,4,1,4.7,8.76%,Improving
+4/13/2026,Roberto,51-60 yrs,Male,Long-term(2y+),Daily Therapy,80,37.1,99%,4,1,4.8,8.58%,Improving
+4/14/2026,Roberto,51-60 yrs,Male,Long-term(2y+),Daily Therapy,80,37.2,98%,5,2,4.9,4.23%,Improving
+4/15/2026,Roberto,51-60 yrs,Male,Long-term(2y+),Daily Therapy,79,36.7,98%,5,3,5,11.71%,Improving
+4/16/2026,Roberto,51-60 yrs,Male,Long-term(2y+),Daily Therapy,75,36.7,99%,5,3,5.1,9.57%,Improving
+4/17/2026,Roberto,51-60 yrs,Male,Long-term(2y+),Daily Therapy,77,37.1,97%,5,4,5.2,10.13%,Improving
+4/18/2026,Roberto,51-60 yrs,Male,Long-term(2y+),Daily Therapy,76,36.9,97%,5,4,5.2,10.89%,Improving
+4/19/2026,Roberto,51-60 yrs,Male,Long-term(2y+),Weekly Review,75,36.9,98%,5,5,5.3,4.01%,Improving
+4/20/2026,Roberto,51-60 yrs,Male,Long-term(2y+),Daily Therapy,75,37.1,99%,5,5,5.3,6.56%,Improving
+4/21/2026,Roberto,51-60 yrs,Male,Long-term(2y+),Daily Therapy,80,36.7,98%,5,5,5.4,8.68%,Improving
+4/22/2026,Roberto,51-60 yrs,Male,Long-term(2y+),Daily Therapy,76,37.1,98%,5,5,5.5,8.20%,Improving
+4/23/2026,Roberto,51-60 yrs,Male,Long-term(2y+),Daily Therapy,77,36.8,99%,5,5,5.6,9.91%,Improving
+4/24/2026,Roberto,51-60 yrs,Male,Long-term(2y+),Daily Therapy,75,36.8,99%,5,5,5.6,8.22%,Improving
+4/25/2026,Roberto,51-60 yrs,Male,Long-term(2y+),Daily Therapy,77,36.8,99%,5,5,5.7,2.77%,Improving
+4/26/2026,Roberto,51-60 yrs,Male,Long-term(2y+),Weekly Review,77,37.1,99%,5,5,5.7,9.63%,Improving
+4/27/2026,Roberto,51-60 yrs,Male,Long-term(2y+),Daily Therapy,73,36.8,97%,5,5,5.9,3.51%,Improving
+4/28/2026,Roberto,51-60 yrs,Male,Long-term(2y+),Daily Therapy,72,36.8,97%,5,5,6,5.92%,Improving

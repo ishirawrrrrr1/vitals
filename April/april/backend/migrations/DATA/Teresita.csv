@@ -1,0 +1,31 @@
+Date,Patient_Name,Age_Range,Gender,Stroke_Duration,Session_Type,Avg_Heart_Rate,Avg_Temp_C,Avg_SpO2,Hand_Level,Foot_Level,HII_Recovery_Index,Weekly_Improvement_Pct,Clinical_Status
+3/30/2026,Teresita,61-70 yrs,Female,Long-term(2y+),Initial Assessment,77,36.4,94%,1,0,2.8,0.00%,Baseline Established
+3/31/2026,Teresita,61-70 yrs,Female,Long-term(2y+),Daily Therapy,76,36.4,96%,1,0,2.9,6.63%,Stable
+4/1/2026,Teresita,61-70 yrs,Female,Long-term(2y+),Daily Therapy,83,36.6,94%,1,0,3,2.10%,Stable
+4/2/2026,Teresita,61-70 yrs,Female,Long-term(2y+),Daily Therapy,78,36.6,95%,1,0,3.1,3.13%,Stable
+4/3/2026,Teresita,61-70 yrs,Female,Long-term(2y+),Daily Therapy,78,36.4,95%,1,0,3.1,4.46%,Stable
+4/4/2026,Teresita,61-70 yrs,Female,Long-term(2y+),Daily Therapy,75,36.6,94%,1,0,3.2,6.25%,Stable
+4/5/2026,Teresita,61-70 yrs,Female,Long-term(2y+),Weekly Review,80,36.2,96%,1,0,3.3,4.29%,Stable
+4/6/2026,Teresita,61-70 yrs,Female,Long-term(2y+),Daily Therapy,83,36.4,94%,1,0,3.3,8.77%,Stable
+4/7/2026,Teresita,61-70 yrs,Female,Long-term(2y+),Daily Therapy,77,36.3,95%,1,0,3.4,8.28%,Stable
+4/8/2026,Teresita,61-70 yrs,Female,Long-term(2y+),Daily Therapy,83,36.3,95%,1,0,3.5,4.58%,Stable
+4/9/2026,Teresita,61-70 yrs,Female,Long-term(2y+),Daily Therapy,78,36.7,96%,1,0,3.5,3.50%,Stable
+4/10/2026,Teresita,61-70 yrs,Female,Long-term(2y+),Daily Therapy,82,36.7,96%,1,1,3.5,3.60%,Stable
+4/11/2026,Teresita,61-70 yrs,Female,Long-term(2y+),Daily Therapy,76,36.6,95%,1,1,3.7,9.51%,Stable
+4/12/2026,Teresita,61-70 yrs,Female,Long-term(2y+),Weekly Review,83,36.4,95%,1,1,3.7,4.73%,Stable
+4/13/2026,Teresita,61-70 yrs,Female,Long-term(2y+),Daily Therapy,75,36.5,94%,1,1,3.8,9.50%,Stable
+4/14/2026,Teresita,61-70 yrs,Female,Long-term(2y+),Daily Therapy,75,36.5,94%,1,1,4,9.62%,Stable
+4/15/2026,Teresita,61-70 yrs,Female,Long-term(2y+),Daily Therapy,79,36.2,95%,1,1,4.1,5.64%,Stable
+4/16/2026,Teresita,61-70 yrs,Female,Long-term(2y+),Daily Therapy,81,36.5,95%,1,1,4.2,5.86%,Stable
+4/17/2026,Teresita,61-70 yrs,Female,Long-term(2y+),Daily Therapy,79,36.4,94%,1,2,4.3,7.67%,Stable
+4/18/2026,Teresita,61-70 yrs,Female,Long-term(2y+),Daily Therapy,77,36.2,94%,1,2,4.3,3.73%,Stable
+4/19/2026,Teresita,61-70 yrs,Female,Long-term(2y+),Weekly Review,78,36.5,94%,1,2,4.3,8.00%,Stable
+4/20/2026,Teresita,61-70 yrs,Female,Long-term(2y+),Daily Therapy,80,36.5,95%,1,2,4.4,7.59%,Stable
+4/21/2026,Teresita,61-70 yrs,Female,Long-term(2y+),Daily Therapy,76,36.7,94%,2,2,4.5,9.55%,Stable
+4/22/2026,Teresita,61-70 yrs,Female,Long-term(2y+),Daily Therapy,83,36.7,94%,2,2,4.6,7.40%,Improving
+4/23/2026,Teresita,61-70 yrs,Female,Long-term(2y+),Daily Therapy,82,36.5,96%,2,2,4.6,4.16%,Improving
+4/24/2026,Teresita,61-70 yrs,Female,Long-term(2y+),Daily Therapy,79,36.5,96%,2,2,4.6,5.18%,Improving
+4/25/2026,Teresita,61-70 yrs,Female,Long-term(2y+),Daily Therapy,78,36.5,95%,2,2,4.6,4.73%,Improving
+4/26/2026,Teresita,61-70 yrs,Female,Long-term(2y+),Weekly Review,80,36.3,95%,2,2,4.7,10.91%,Improving
+4/27/2026,Teresita,61-70 yrs,Female,Long-term(2y+),Daily Therapy,82,36.6,94%,2,2,4.8,7.50%,Improving
+4/28/2026,Teresita,61-70 yrs,Female,Long-term(2y+),Daily Therapy,77,36.6,96%,2,2,4.9,4.17%,Improving

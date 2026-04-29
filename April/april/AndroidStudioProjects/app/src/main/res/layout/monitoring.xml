@@ -1,0 +1,661 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.drawerlayout.widget.DrawerLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/drawerLayout"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="#0F172A"
+    android:fitsSystemWindows="true"
+    tools:context=".monitoring">
+
+    <!-- MAIN CONTENT -->
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+
+        <!-- PREMIUM GLASS APP BAR -->
+        <com.google.android.material.appbar.AppBarLayout
+            android:id="@+id/appBar"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:background="#1E293B"
+            app:layout_constraintTop_toTopOf="parent">
+
+            <androidx.appcompat.widget.Toolbar
+                android:id="@+id/toolbar"
+                android:layout_width="match_parent"
+                android:layout_height="?attr/actionBarSize"
+                app:title="VITALS MONITOR"
+                app:titleTextColor="#38BDF8"
+                app:navigationIcon="?attr/homeAsUpIndicator"
+                app:navigationIconTint="#38BDF8"
+                app:itemIconTint="#38BDF8" />
+        </com.google.android.material.appbar.AppBarLayout>
+
+        <androidx.core.widget.NestedScrollView
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:fillViewport="true"
+            app:layout_constraintTop_toBottomOf="@id/appBar"
+            app:layout_constraintBottom_toTopOf="@+id/btnStartContainer">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:paddingBottom="24dp">
+
+                <!-- HUB STATUS STRIP -->
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:background="#1E293B"
+                    android:padding="10dp"
+                    android:gravity="center_vertical"
+                    android:baselineAligned="false"
+                    android:orientation="horizontal">
+
+                    <View
+                        android:id="@+id/hubStatusDot"
+                        android:layout_width="12dp"
+                        android:layout_height="12dp"
+                        android:layout_marginStart="16dp"
+                        android:layout_marginEnd="16dp"
+                        android:background="@drawable/dot_red" />
+
+                    <LinearLayout
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:paddingStart="12dp"
+                        android:paddingEnd="12dp"
+                        android:orientation="vertical">
+
+                        <TextView
+                            android:id="@+id/tvHubStatus"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="@string/hub_disconnected"
+                            android:textColor="#94A3B8"
+                            android:textSize="11sp"
+                            android:textStyle="bold"
+                            android:letterSpacing="0.05" />
+
+                        <TextView
+                            android:id="@+id/tvDiscoveryStatus"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="@string/waiting_relay"
+                            android:textColor="#64748B"
+                            android:textSize="11sp" />
+                    </LinearLayout>
+
+                    <com.google.android.material.button.MaterialButton
+                        android:id="@+id/btnScanHub"
+                        style="@style/Widget.MaterialComponents.Button.TextButton"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="@string/re_sync"
+                        android:textColor="#38BDF8"
+                        android:textSize="11sp"
+                        android:textStyle="bold"
+                        android:paddingStart="16dp"
+                        android:paddingEnd="16dp" />
+                </LinearLayout>
+
+                <!-- WRAPPER FOR DYNAMIC VISIBILITY -->
+                <LinearLayout
+                    android:id="@+id/layoutVitalsVisuals"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:visibility="gone">
+
+                    <!-- LIVE WAVEFORM ENGINE -->
+                    <com.google.android.material.card.MaterialCardView
+                        android:layout_width="match_parent"
+                        android:layout_height="220dp"
+                        android:layout_margin="16dp"
+                        app:cardCornerRadius="24dp"
+                        app:cardElevation="8dp"
+                        app:cardBackgroundColor="#111827"
+                        app:strokeWidth="1dp"
+                        app:strokeColor="#334155">
+
+                        <androidx.constraintlayout.widget.ConstraintLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="match_parent"
+                            android:padding="16dp">
+
+                            <TextView
+                                android:id="@+id/chartLabel"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="@string/cardiac_waveform"
+                                android:textColor="#38BDF8"
+                                android:textSize="11sp"
+                                android:textStyle="bold"
+                                android:letterSpacing="0.1"
+                                app:layout_constraintTop_toTopOf="parent"
+                                app:layout_constraintStart_toStartOf="parent" />
+
+                            <com.github.mikephil.charting.charts.LineChart
+                                android:id="@+id/vitalsChart"
+                                android:layout_width="match_parent"
+                                android:layout_height="0dp"
+                                android:layout_marginTop="8dp"
+                                app:layout_constraintTop_toBottomOf="@id/chartLabel"
+                                app:layout_constraintBottom_toBottomOf="parent" />
+                        </androidx.constraintlayout.widget.ConstraintLayout>
+                    </com.google.android.material.card.MaterialCardView>
+
+                    <!-- METRICS GRID -->
+                    <androidx.gridlayout.widget.GridLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginHorizontal="8dp"
+                        app:columnCount="2"
+                        app:rowCount="2">
+
+                        <!-- HR -->
+                        <com.google.android.material.card.MaterialCardView
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            app:layout_columnWeight="1"
+                            android:layout_margin="8dp"
+                            app:cardCornerRadius="20dp"
+                            app:cardElevation="4dp"
+                            app:cardBackgroundColor="#1E293B"
+                            app:strokeWidth="1dp"
+                            app:strokeColor="#334155">
+
+                            <LinearLayout
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:orientation="vertical"
+                                android:padding="16dp">
+                                <LinearLayout
+                                    android:layout_width="match_parent"
+                                    android:layout_height="wrap_content"
+                                    android:orientation="horizontal"
+                                    android:gravity="center_vertical"
+                                    android:baselineAligned="false">
+                                    <TextView android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:text="@string/heart_rate" android:textColor="#94A3B8" android:textSize="11sp" android:textStyle="bold" android:letterSpacing="0.1"/>
+                                    <View android:id="@+id/viewHrPulse" android:layout_width="8dp" android:layout_height="8dp" android:background="@drawable/dot_red" android:alpha="0" />
+                                </LinearLayout>
+                                <TextView android:id="@+id/tvHeartRate" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="@string/default_value" android:textColor="#F43F5E" android:textSize="28sp" android:textStyle="bold" android:layout_marginTop="4dp"/>
+                                <TextView android:id="@+id/tvHeartRateStatus" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="@string/no_signal" android:textColor="#64748B" android:textSize="11sp" android:textStyle="bold"/>
+                            </LinearLayout>
+                        </com.google.android.material.card.MaterialCardView>
+
+                        <!-- TEMP -->
+                        <com.google.android.material.card.MaterialCardView
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            app:layout_columnWeight="1"
+                            android:layout_margin="8dp"
+                            app:cardCornerRadius="20dp"
+                            app:cardElevation="4dp"
+                            app:cardBackgroundColor="#1E293B"
+                            app:strokeWidth="1dp"
+                            app:strokeColor="#334155">
+
+                            <LinearLayout
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:orientation="vertical"
+                                android:padding="16dp">
+                                <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="@string/temperature_label" android:textColor="#94A3B8" android:textSize="11sp" android:textStyle="bold" android:letterSpacing="0.1"/>
+                                <TextView android:id="@+id/tvTemp" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="@string/default_temp" android:textColor="#FB923C" android:textSize="28sp" android:textStyle="bold" android:layout_marginTop="4dp"/>
+                                <TextView android:id="@+id/tvTempStatus" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="@string/waiting" android:textColor="#64748B" android:textSize="11sp" android:textStyle="bold"/>
+                            </LinearLayout>
+                        </com.google.android.material.card.MaterialCardView>
+
+                        <!-- SPO2 -->
+                        <com.google.android.material.card.MaterialCardView
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            app:layout_columnWeight="1"
+                            android:layout_margin="8dp"
+                            app:cardCornerRadius="20dp"
+                            app:cardElevation="4dp"
+                            app:cardBackgroundColor="#1E293B"
+                            app:strokeWidth="1dp"
+                            app:strokeColor="#334155">
+
+                            <LinearLayout
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:orientation="vertical"
+                                android:padding="16dp">
+                                <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="@string/oxygen_spo2" android:textColor="#94A3B8" android:textSize="11sp" android:textStyle="bold" android:letterSpacing="0.1"/>
+                                <TextView android:id="@+id/tvSpo2" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="@string/default_oxy" android:textColor="#38BDF8" android:textSize="28sp" android:textStyle="bold" android:layout_marginTop="4dp"/>
+                                <TextView android:id="@+id/tvSpo2Status" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="@string/status_ready" android:textColor="#64748B" android:textSize="11sp" android:textStyle="bold"/>
+                            </LinearLayout>
+                        </com.google.android.material.card.MaterialCardView>
+
+                        <!-- BP -->
+                        <com.google.android.material.card.MaterialCardView
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            app:layout_columnWeight="1"
+                            android:layout_margin="8dp"
+                            app:cardCornerRadius="20dp"
+                            app:cardElevation="4dp"
+                            app:cardBackgroundColor="#1E293B"
+                            app:strokeWidth="1dp"
+                            app:strokeColor="#334155">
+
+                            <LinearLayout
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:orientation="vertical"
+                                android:padding="16dp">
+                                <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="@string/blood_pressure" android:textColor="#94A3B8" android:textSize="11sp" android:textStyle="bold" android:letterSpacing="0.1"/>
+                                <TextView android:id="@+id/tvBP" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="@string/default_bp" android:textColor="#C084FC" android:textSize="28sp" android:textStyle="bold" android:layout_marginTop="4dp"/>
+                                <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="@string/estimated" android:textColor="#64748B" android:textSize="11sp" android:textStyle="bold"/>
+                            </LinearLayout>
+                        </com.google.android.material.card.MaterialCardView>
+                    </androidx.gridlayout.widget.GridLayout>
+                </LinearLayout>
+
+                <!-- GLOBAL ACTIVE PATIENT CARD -->
+                <com.google.android.material.card.MaterialCardView
+                    android:id="@+id/cardActivePatient"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginHorizontal="16dp"
+                    android:layout_marginTop="8dp"
+                    android:layout_marginBottom="8dp"
+                    app:cardCornerRadius="20dp"
+                    app:cardElevation="2dp"
+                    app:cardBackgroundColor="#1E293B"
+                    app:strokeWidth="1dp"
+                    app:strokeColor="#334155">
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal"
+                        android:padding="16dp"
+                        android:gravity="center_vertical">
+
+                        <ImageView
+                            android:layout_width="40dp"
+                            android:layout_height="40dp"
+                            android:src="@android:drawable/ic_menu_myplaces"
+                            app:tint="#38BDF8"
+                            android:padding="8dp"
+                            android:background="@drawable/dot_green"
+                            android:backgroundTint="#0C4A6E"
+                            android:contentDescription="@string/active_patient_label"/>
+
+                        <LinearLayout
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:orientation="vertical"
+                            android:layout_marginStart="16dp"
+                            android:layout_marginEnd="16dp">
+
+                            <TextView
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="@string/active_patient_label"
+                                android:textColor="#94A3B8"
+                                android:textSize="11sp"
+                                android:textStyle="bold"
+                                android:letterSpacing="0.1"/>
+
+                            <TextView
+                                android:id="@+id/tvActivePatientName"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="@string/no_patient_selected"
+                                android:textColor="#FFFFFF"
+                                android:textSize="16sp"
+                                android:textStyle="bold"/>
+                        </LinearLayout>
+
+                        <com.google.android.material.button.MaterialButton
+                            android:id="@+id/btnSelectPatient"
+                            style="@style/Widget.MaterialComponents.Button.TextButton"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="@string/choose_add"
+                            android:textColor="#38BDF8"
+                            android:textSize="12sp"
+                            android:textStyle="bold"
+                            android:paddingStart="8dp"
+                            android:paddingEnd="8dp"/>
+                    </LinearLayout>
+                </com.google.android.material.card.MaterialCardView>
+
+                <!-- WORKFLOW CONTROL TABS -->
+                <com.google.android.material.card.MaterialCardView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_margin="16dp"
+                    app:cardCornerRadius="24dp"
+                    app:cardElevation="4dp"
+                    app:cardBackgroundColor="#1E293B"
+                    app:strokeWidth="1dp"
+                    app:strokeColor="#334155">
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="vertical">
+
+                        <!-- MODERN TABS -->
+                        <LinearLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="56dp"
+                            android:orientation="horizontal"
+                            android:background="#0F172A"
+                            android:padding="6dp"
+                            android:baselineAligned="false">
+
+                            <TextView
+                                android:id="@+id/tabAutomatic"
+                                android:layout_width="0dp"
+                                android:layout_height="match_parent"
+                                android:layout_weight="1"
+                                android:text="@string/auto_workflow"
+                                android:gravity="center"
+                                android:textStyle="bold"
+                                android:textSize="12sp"
+                                android:textColor="#FFFFFF"
+                                android:background="@drawable/tab_selected" />
+
+                            <TextView
+                                android:id="@+id/tabManual"
+                                android:layout_width="0dp"
+                                android:layout_height="match_parent"
+                                android:layout_weight="1"
+                                android:text="@string/manual_override"
+                                android:gravity="center"
+                                android:textStyle="bold"
+                                android:textSize="12sp"
+                                android:textColor="#64748B"
+                                android:background="@android:color/transparent" />
+                        </LinearLayout>
+
+                        <!-- Tab Content -->
+                        <FrameLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:padding="20dp">
+
+                            <LinearLayout
+                                android:id="@+id/layoutAutomatic"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:orientation="vertical"
+                                android:visibility="visible">
+
+                                <LinearLayout
+                                    android:layout_width="match_parent"
+                                    android:layout_height="wrap_content"
+                                    android:layout_marginTop="16dp"
+                                    android:orientation="horizontal"
+                                    android:baselineAligned="false">
+
+                                    <LinearLayout
+                                        android:layout_width="0dp"
+                                        android:layout_height="wrap_content"
+                                        android:layout_weight="1"
+                                        android:orientation="vertical"
+                                        android:layout_marginEnd="8dp">
+                                        <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="@string/therapy_intensity" android:textColor="#94A3B8" android:textSize="11sp" android:textStyle="bold"/>
+                                        <Spinner android:id="@+id/spinnerIntensity" android:layout_width="match_parent" android:layout_height="48dp" android:backgroundTint="#38BDF8" />
+                                    </LinearLayout>
+
+                                    <LinearLayout
+                                        android:layout_width="0dp"
+                                        android:layout_height="wrap_content"
+                                        android:layout_weight="1"
+                                        android:orientation="vertical"
+                                        android:layout_marginHorizontal="4dp">
+                                        <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="@string/therapy_mode" android:textColor="#94A3B8" android:textSize="11sp" android:textStyle="bold"/>
+                                        <Spinner android:id="@+id/spinnerMode" android:layout_width="match_parent" android:layout_height="48dp" android:backgroundTint="#38BDF8" />
+                                    </LinearLayout>
+
+                                    <LinearLayout
+                                        android:layout_width="0dp"
+                                        android:layout_height="wrap_content"
+                                        android:layout_weight="1"
+                                        android:orientation="vertical"
+                                        android:layout_marginStart="8dp">
+                                        <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="@string/session_duration_label" android:textColor="#94A3B8" android:textSize="11sp" android:textStyle="bold"/>
+                                        <Spinner android:id="@+id/spinnerDuration" android:layout_width="match_parent" android:layout_height="48dp" android:backgroundTint="#38BDF8" />
+                                    </LinearLayout>
+                                </LinearLayout>
+
+                                <View android:layout_width="match_parent" android:layout_height="1dp" android:background="#334155" android:layout_marginVertical="16dp"/>
+
+                                <androidx.appcompat.widget.SwitchCompat
+                                    android:id="@+id/switchVitalsOnly"
+                                    android:layout_width="match_parent"
+                                    android:layout_height="wrap_content"
+                                    android:text="@string/observation_only"
+                                    android:textColor="#94A3B8"
+                                    android:textStyle="bold"
+                                    android:textSize="12sp"
+                                    app:thumbTint="#38BDF8"
+                                    app:trackTint="#334155"/>
+
+                                <TextView
+                                    android:id="@+id/tvProgressAlert"
+                                    android:layout_width="match_parent"
+                                    android:layout_height="wrap_content"
+                                    android:layout_marginTop="12dp"
+                                    android:text="@string/prev_profile_found"
+                                    android:textColor="#38BDF8"
+                                    android:textSize="11sp"
+                                    android:textStyle="bold"
+                                    android:visibility="gone" />
+                            </LinearLayout>
+
+                            <!-- Manual View -->
+                            <LinearLayout
+                                android:id="@+id/layoutManual"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:orientation="vertical"
+                                android:visibility="gone">
+
+                                <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="@string/direct_actuator" android:textColor="#38BDF8" android:textSize="11sp" android:textStyle="bold" android:letterSpacing="0.1"/>
+
+                                <LinearLayout
+                                    android:layout_width="match_parent"
+                                    android:layout_height="wrap_content"
+                                    android:layout_marginTop="16dp"
+                                    android:orientation="horizontal"
+                                    android:gravity="center"
+                                    android:baselineAligned="false">
+
+                                    <com.google.android.material.button.MaterialButton
+                                        android:id="@+id/btnHandExt"
+                                        android:layout_width="0dp"
+                                        android:layout_weight="1"
+                                        android:layout_height="64dp"
+                                        android:text="@string/arm_ext"
+                                        app:cornerRadius="12dp"
+                                        app:backgroundTint="#334155"
+                                        app:strokeColor="#38BDF8"
+                                        app:strokeWidth="1dp"/>
+
+                                    <com.google.android.material.button.MaterialButton
+                                        android:id="@+id/btnHandStop"
+                                        android:layout_width="64dp"
+                                        android:layout_height="64dp"
+                                        android:layout_marginHorizontal="12dp"
+                                        app:icon="@drawable/ic_stop"
+                                        app:iconGravity="textStart"
+                                        app:iconPadding="0dp"
+                                        app:backgroundTint="#E11D48"
+                                        app:cornerRadius="32dp"
+                                        android:contentDescription="@string/navigation_drawer_close" />
+
+                                    <com.google.android.material.button.MaterialButton
+                                        android:id="@+id/btnHandRet"
+                                        android:layout_width="0dp"
+                                        android:layout_weight="1"
+                                        android:layout_height="64dp"
+                                        android:text="@string/arm_ret"
+                                        app:cornerRadius="12dp"
+                                        app:backgroundTint="#334155"
+                                        app:strokeColor="#38BDF8"
+                                        app:strokeWidth="1dp"/>
+                                </LinearLayout>
+
+                                <LinearLayout
+                                    android:layout_width="match_parent"
+                                    android:layout_height="wrap_content"
+                                    android:layout_marginTop="16dp"
+                                    android:orientation="horizontal"
+                                    android:gravity="center"
+                                    android:baselineAligned="false">
+
+                                    <com.google.android.material.button.MaterialButton
+                                        android:id="@+id/btnLegExt"
+                                        android:layout_width="0dp"
+                                        android:layout_weight="1"
+                                        android:layout_height="64dp"
+                                        android:text="@string/leg_ext"
+                                        app:cornerRadius="12dp"
+                                        app:backgroundTint="#334155"
+                                        app:strokeColor="#38BDF8"
+                                        app:strokeWidth="1dp"/>
+
+                                    <com.google.android.material.button.MaterialButton
+                                        android:id="@+id/btnLegStop"
+                                        android:layout_width="64dp"
+                                        android:layout_height="64dp"
+                                        android:layout_marginHorizontal="12dp"
+                                        app:icon="@drawable/ic_stop"
+                                        app:iconGravity="textStart"
+                                        app:iconPadding="0dp"
+                                        app:backgroundTint="#E11D48"
+                                        app:cornerRadius="32dp"
+                                        android:contentDescription="@string/navigation_drawer_close"/>
+
+                                    <com.google.android.material.button.MaterialButton
+                                        android:id="@+id/btnLegRet"
+                                        android:layout_width="0dp"
+                                        android:layout_weight="1"
+                                        android:layout_height="64dp"
+                                        android:text="@string/leg_ret"
+                                        app:cornerRadius="12dp"
+                                        app:backgroundTint="#334155"
+                                        app:strokeColor="#38BDF8"
+                                        app:strokeWidth="1dp"/>
+                                </LinearLayout>
+
+                                <!-- ROBOTIC GLOVE / GRIP CONTROL -->
+                                <LinearLayout
+                                    android:layout_width="match_parent"
+                                    android:layout_height="wrap_content"
+                                    android:layout_marginTop="16dp"
+                                    android:orientation="vertical">
+
+                                    <TextView 
+                                        android:layout_width="wrap_content" 
+                                        android:layout_height="wrap_content" 
+                                        android:text="@string/pneumatic_glove" 
+                                        android:textColor="#38BDF8" 
+                                        android:textSize="11sp" 
+                                        android:textStyle="bold" 
+                                        android:letterSpacing="0.1"/>
+
+                                    <androidx.appcompat.widget.SwitchCompat
+                                        android:id="@+id/switchGlovePower"
+                                        android:layout_width="match_parent"
+                                        android:layout_height="wrap_content"
+                                        android:text="@string/glove_master_power"
+                                        android:textColor="#FFFFFF"
+                                        android:textStyle="bold"
+                                        android:layout_marginTop="8dp"
+                                        app:thumbTint="#22C55E"
+                                        app:trackTint="#1E293B"/>
+
+                                    <LinearLayout
+                                        android:layout_width="match_parent"
+                                        android:layout_height="wrap_content"
+                                        android:layout_marginTop="12dp"
+                                        android:orientation="horizontal"
+                                        android:baselineAligned="false">
+
+                                        <com.google.android.material.button.MaterialButton
+                                            android:id="@+id/btnCycleForce"
+                                            android:layout_width="0dp"
+                                            android:layout_weight="1"
+                                            android:layout_height="52dp"
+                                            android:text="@string/cycle_force"
+                                            android:layout_marginEnd="8dp"
+                                            android:layout_marginStart="8dp"
+                                            app:cornerRadius="12dp"
+                                            app:backgroundTint="#334155"
+                                            app:strokeColor="#38BDF8"
+                                            app:strokeWidth="1dp"/>
+
+                                        <com.google.android.material.button.MaterialButton
+                                            android:id="@+id/btnCycleMode"
+                                            android:layout_width="0dp"
+                                            android:layout_weight="1"
+                                            android:layout_height="52dp"
+                                            android:text="@string/cycle_mode"
+                                            android:layout_marginStart="8dp"
+                                            android:layout_marginEnd="8dp"
+                                            app:cornerRadius="12dp"
+                                            app:backgroundTint="#334155"
+                                            app:strokeColor="#38BDF8"
+                                            app:strokeWidth="1dp"/>
+                                    </LinearLayout>
+                                </LinearLayout>
+                            </LinearLayout>
+                        </FrameLayout>
+                    </LinearLayout>
+                </com.google.android.material.card.MaterialCardView>
+            </LinearLayout>
+        </androidx.core.widget.NestedScrollView>
+
+        <!-- FLOATING ACTION BUTTON CONTAINER -->
+        <LinearLayout
+            android:id="@+id/btnStartContainer"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:padding="20dp"
+            android:background="#0F172A"
+            app:layout_constraintBottom_toBottomOf="parent">
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btnStart"
+                android:layout_width="match_parent"
+                android:layout_height="64dp"
+                android:text="@string/initialize_session"
+                android:textSize="16sp"
+                android:textStyle="bold"
+                app:cornerRadius="32dp"
+                app:backgroundTint="#2563EB"
+                app:rippleColor="#FFFFFF" />
+        </LinearLayout>
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
+
+    <!-- SIDEBAR NAVIGATION -->
+    <com.google.android.material.navigation.NavigationView
+        android:id="@+id/navigationView"
+        android:layout_width="wrap_content"
+        android:layout_height="match_parent"
+        android:layout_gravity="start"
+        android:background="#1E293B"
+        app:itemTextColor="#94A3B8"
+        app:itemIconTint="#38BDF8"
+        app:headerLayout="@layout/nav_header"
+        app:menu="@menu/side_tabs" />
+
+</androidx.drawerlayout.widget.DrawerLayout>

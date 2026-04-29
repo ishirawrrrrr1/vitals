@@ -1,0 +1,2185 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Vitals Monitor - Admin Dashboard</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        /* ── Design Tokens ── */
+        :root {
+            --bg:          #0f1117;
+            --surface:     #1a1d27;
+            --surface2:    #22263a;
+            --surface3:    #2a2f47;
+            --border:      #2e3347;
+            --accent:      #7c6cfc;
+            --accent2:     #4ecdc4;
+            --danger:      #ff6b6b;
+            --warn:        #ffd93d;
+            --success:     #6bcb77;
+            --text:        #e2e8f0;
+            --muted:       #64748b;
+            --sidebar-width: 250px;
+            --sidebar-collapsed-width: 70px;
+            --navbar-height: 68px;
+            --radius:      12px;
+        }
+
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+        body {
+            background: var(--bg);
+            font-family: 'Inter', 'Segoe UI', sans-serif;
+            color: var(--text);
+            min-height: 100vh;
+        }
+
+        /* ── Scrollbar ── */
+        ::-webkit-scrollbar { width: 6px; height: 6px; }
+        ::-webkit-scrollbar-track { background: var(--surface); }
+        ::-webkit-scrollbar-thumb { background: var(--surface3); border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: var(--accent); }
+
+        /* ── Navbar ── */
+        .navbar {
+            position: fixed;
+            top: 0; left: 0; right: 0;
+            height: var(--navbar-height);
+            background: rgba(26, 29, 39, 0.92);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0 30px;
+            z-index: 1100;
+            box-shadow: 0 4px 24px rgba(0,0,0,0.4);
+        }
+
+        .navbar-brand {
+            font-weight: 700;
+            font-size: 20px;
+            color: var(--text) !important;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            letter-spacing: -0.3px;
+        }
+
+        .navbar-brand .brand-icon {
+            width: 38px; height: 38px;
+            border-radius: 10px;
+            background: linear-gradient(135deg, var(--accent), var(--accent2));
+            display: flex; align-items: center; justify-content: center;
+            font-size: 17px;
+            flex-shrink: 0;
+        }
+
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            color: var(--text);
+        }
+
+        .user-avatar {
+            width: 36px; height: 36px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, var(--accent), var(--accent2));
+            display: flex; align-items: center; justify-content: center;
+            font-weight: 700;
+            font-size: 14px;
+            color: white;
+            border: 2px solid rgba(124,108,252,0.4);
+        }
+
+        #userDisplay {
+            font-size: 14px;
+            font-weight: 500;
+            color: var(--text);
+        }
+
+        .user-info .btn-light {
+            background: var(--surface2);
+            border: 1px solid var(--border);
+            color: var(--muted);
+            font-size: 13px;
+            border-radius: 8px;
+            transition: all 0.2s;
+        }
+        .user-info .btn-light:hover {
+            background: rgba(255,107,107,0.1);
+            border-color: var(--danger);
+            color: var(--danger);
+        }
+
+        /* ── Sidebar ── */
+        .sidebar {
+            width: var(--sidebar-width);
+            height: calc(100vh - var(--navbar-height));
+            background: var(--surface);
+            position: fixed;
+            left: 0;
+            top: var(--navbar-height);
+            border-right: 1px solid var(--border);
+            transition: all 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+            z-index: 1000;
+            overflow-x: hidden;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .sidebar.collapsed { width: var(--sidebar-collapsed-width); }
+
+        .sidebar-toggle {
+            padding: 14px 20px;
+            display: flex;
+            align-items: center;
+            justify-content: flex-end;
+            cursor: pointer;
+            color: var(--muted);
+            border-bottom: 1px solid var(--border);
+            transition: color 0.2s;
+        }
+        .sidebar-toggle:hover { color: var(--accent); }
+        .sidebar.collapsed .sidebar-toggle { justify-content: center; }
+
+        .sidebar-item {
+            padding: 13px 22px;
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            color: var(--muted);
+            font-weight: 500;
+            font-size: 14px;
+            cursor: pointer;
+            transition: all 0.2s;
+            border-left: 3px solid transparent;
+            white-space: nowrap;
+        }
+
+        .sidebar-item:hover {
+            background: rgba(124,108,252,0.08);
+            color: var(--text);
+            border-left-color: rgba(124,108,252,0.4);
+        }
+
+        .sidebar-item.active {
+            background: rgba(124,108,252,0.12);
+            color: var(--accent);
+            border-left-color: var(--accent);
+        }
+
+        .sidebar-item i {
+            width: 20px;
+            text-align: center;
+            font-size: 15px;
+            flex-shrink: 0;
+        }
+
+        .sidebar.collapsed .sidebar-item span,
+        .sidebar.collapsed .section-title { display: none; }
+
+        .sidebar.collapsed .sidebar-item {
+            justify-content: center;
+            padding: 16px 0;
+        }
+
+        .section-title {
+            padding: 20px 22px 8px;
+            font-size: 10px;
+            font-weight: 700;
+            color: var(--muted);
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+            white-space: nowrap;
+        }
+
+        /* ── Main Content ── */
+        .main-content {
+            margin-left: var(--sidebar-width);
+            margin-top: var(--navbar-height);
+            padding: 30px;
+            min-height: calc(100vh - var(--navbar-height));
+            transition: all 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .main-content.expanded { margin-left: var(--sidebar-collapsed-width); }
+
+        .header-title {
+            font-size: 22px;
+            font-weight: 700;
+            color: var(--text);
+            margin-bottom: 24px;
+            letter-spacing: -0.3px;
+        }
+
+        /* ── Metric Cards ── */
+        .metric-card {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            color: white;
+            border-radius: var(--radius);
+            padding: 24px;
+            text-align: center;
+            margin-bottom: 20px;
+            transition: transform 0.25s ease, box-shadow 0.25s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .metric-card::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(135deg, rgba(124,108,252,0.12) 0%, transparent 60%);
+            border-radius: inherit;
+        }
+
+        .metric-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 12px 30px rgba(0,0,0,0.3);
+            border-color: rgba(124,108,252,0.4);
+        }
+
+        .metric-card.danger::before  { background: linear-gradient(135deg, rgba(255,107,107,0.15) 0%, transparent 60%); }
+        .metric-card.warning::before { background: linear-gradient(135deg, rgba(255,217,61,0.12)  0%, transparent 60%); }
+        .metric-card.success::before { background: linear-gradient(135deg, rgba(78,205,196,0.12)  0%, transparent 60%); }
+
+        .metric-card.danger:hover  { border-color: rgba(255,107,107,0.4); }
+        .metric-card.warning:hover { border-color: rgba(255,217,61,0.4);  }
+        .metric-card.success:hover { border-color: rgba(78,205,196,0.4);  }
+
+        .metric-value {
+            font-size: 46px;
+            font-weight: 700;
+            margin: 10px 0;
+            font-family: 'JetBrains Mono', monospace;
+        }
+
+        .metric-label {
+            font-size: 11px;
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+            color: var(--muted);
+            font-weight: 600;
+        }
+
+        .metric-subvalue {
+            font-size: 13px;
+            color: var(--muted);
+            margin-top: 8px;
+        }
+
+        /* Accent colours per card type */
+        .metric-card       .metric-value { color: var(--accent);  }
+        .metric-card.danger  .metric-value { color: var(--danger);  }
+        .metric-card.warning .metric-value { color: var(--warn);   }
+        .metric-card.success .metric-value { color: var(--accent2);}
+
+        /* ── Control Section / Panels ── */
+        .control-section {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            padding: 22px;
+            border-radius: var(--radius);
+            margin-bottom: 20px;
+            transition: border-color 0.2s;
+        }
+        .control-section:hover { border-color: var(--surface3); }
+
+        .control-section h5 {
+            margin-bottom: 16px;
+            color: var(--text);
+            font-weight: 700;
+            font-size: 14px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .control-section h5 i { color: var(--accent); }
+
+        /* ── Sensor Items ── */
+        .sensor-item {
+            background: var(--surface2);
+            border: 1px solid var(--border);
+            padding: 16px;
+            margin-bottom: 10px;
+            border-radius: 10px;
+            border-left: 4px solid var(--accent);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            transition: all 0.2s;
+        }
+        .sensor-item:hover { border-color: rgba(124,108,252,0.5); transform: translateX(3px); }
+        .sensor-item.offline { border-left-color: var(--danger); opacity: 0.75; }
+
+        .sensor-info h5 { margin: 0; color: var(--text); font-weight: 600; font-size: 14px; }
+        .sensor-info small { color: var(--muted); display: block; margin-top: 4px; font-size: 12px; }
+
+        .sensor-status { display: flex; align-items: center; gap: 10px; }
+
+        .status-dot {
+            width: 10px; height: 10px;
+            border-radius: 50%;
+            background: var(--accent2);
+            animation: pulse 2s infinite;
+            flex-shrink: 0;
+        }
+        .status-dot.offline { background: var(--danger); animation: none; }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; box-shadow: 0 0 0 0 rgba(78,205,196,0.5); }
+            50%       { opacity: 0.7; box-shadow: 0 0 0 5px rgba(78,205,196,0); }
+        }
+
+        .status-badge {
+            background: rgba(107,203,119,0.15);
+            color: var(--success);
+            border: 1px solid rgba(107,203,119,0.3);
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 11px;
+            font-weight: 700;
+            letter-spacing: 0.5px;
+        }
+        .status-badge.offline {
+            background: rgba(255,107,107,0.1);
+            color: var(--danger);
+            border-color: rgba(255,107,107,0.3);
+        }
+
+        /* ── Tabs ── */
+        .tab-container {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            overflow: hidden;
+        }
+
+        .tab-buttons {
+            display: flex;
+            border-bottom: 1px solid var(--border);
+            background: var(--surface2);
+        }
+
+        .tab-btn {
+            flex: 1;
+            padding: 14px;
+            border: none;
+            background: none;
+            cursor: pointer;
+            font-weight: 600;
+            color: var(--muted);
+            font-size: 13px;
+            border-bottom: 3px solid transparent;
+            transition: all 0.25s ease;
+            text-transform: uppercase;
+            letter-spacing: 0.8px;
+            font-family: 'Inter', sans-serif;
+        }
+        .tab-btn:hover  { color: var(--text); background: rgba(124,108,252,0.06); }
+        .tab-btn.active { color: var(--accent); border-bottom-color: var(--accent); background: rgba(124,108,252,0.08); }
+
+        .tab-content { display: none; padding: 24px; animation: fadeIn 0.25s ease; }
+        .tab-content.active { display: block; }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(8px); }
+            to   { opacity: 1; transform: translateY(0); }
+        }
+
+        /* ── Terminal ── */
+        .terminal-header {
+            background: #1a1d27;
+            padding: 10px 18px;
+            border: 1px solid var(--border);
+            border-bottom: none;
+            border-top-left-radius: 10px;
+            border-top-right-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+        .terminal-filter {
+            background: var(--surface2);
+            border: 1px solid var(--border);
+            color: var(--text);
+            font-size: 11px;
+            padding: 4px 12px;
+            border-radius: 6px;
+            width: 160px;
+            outline: none;
+            transition: border-color 0.2s;
+        }
+        .terminal-filter:focus { border-color: var(--accent); }
+        #terminalOutput {
+            background: #080b10;
+            color: #4af7b0;
+            padding: 20px;
+            border-bottom-left-radius: 10px;
+            border-bottom-right-radius: 10px;
+            border: 1px solid var(--border);
+            height: 400px;
+            overflow-y: auto;
+            font-family: 'JetBrains Mono', 'Courier New', monospace;
+            font-size: 12.5px;
+            line-height: 1.8;
+        }
+        .log-line { margin-bottom: 4px; }
+        .log-tag {
+            font-size: 10px;
+            font-weight: bold;
+            padding: 1px 6px;
+            border-radius: 4px;
+            margin-right: 8px;
+            text-transform: uppercase;
+        }
+
+        /* ── Therapy Session UI ── */
+        .timer-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            margin: 20px 0;
+        }
+        .timer-ring {
+            width: 180px;
+            height: 180px;
+            border-radius: 50%;
+            border: 8px solid var(--surface2);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            background: radial-gradient(circle, var(--surface) 40%, transparent 100%);
+            box-shadow: 0 0 40px rgba(124,108,252,0.1);
+        }
+        .timer-progress {
+            position: absolute;
+            top: -8px; left: -8px; right: -8px; bottom: -8px;
+            border-radius: 50%;
+            border: 8px solid transparent;
+            border-top-color: var(--accent);
+            transform: rotate(-90deg);
+            transition: transform 1s linear;
+        }
+        .timer-value {
+            font-size: 32px;
+            font-weight: 700;
+            color: var(--text);
+            font-family: 'JetBrains Mono', monospace;
+        }
+        .session-status-badge {
+            padding: 6px 16px;
+            border-radius: 30px;
+            font-weight: 700;
+            font-size: 12px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-top: 5px;
+        }
+        .status-initial { background: rgba(187,154,247,0.2) !important; color: #bb9af7 !important; border: 1px solid #bb9af7; }
+        .status-running { background: rgba(115,218,202,0.2) !important; color: #73daca !important; border: 1px solid #73daca; }
+        .status-completed { background: rgba(158,206,106,0.2) !important; color: #9ece6a !important; border: 1px solid #9ece6a; }
+        
+        .session-avg-card {
+            background: var(--surface2);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 15px;
+            text-align: center;
+            flex: 1;
+            margin: 0 5px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+        }
+        .session-avg-label { font-size: 10px; color: var(--muted); text-transform: uppercase; margin-bottom: 5px; letter-spacing: 1px; }
+        .session-avg-value { font-size: 20px; font-weight: 700; color: var(--accent2); font-family: 'JetBrains Mono', monospace; }
+
+        /* ── Buttons ── */
+        .btn-primary-gradient {
+            background: linear-gradient(135deg, var(--accent) 0%, #5a4fcf 100%);
+            border: none;
+            color: white;
+            font-weight: 700;
+            border-radius: 8px;
+            padding: 10px 20px;
+            transition: transform 0.2s, box-shadow 0.2s;
+            font-family: 'Inter', sans-serif;
+            font-size: 13px;
+        }
+        .btn-primary-gradient:hover {
+            color: white;
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(124,108,252,0.4);
+        }
+
+        .btn-danger-gradient {
+            background: linear-gradient(135deg, var(--danger) 0%, #cc4040 100%);
+            border: none;
+            color: white;
+            font-weight: 700;
+            border-radius: 8px;
+            font-family: 'Inter', sans-serif;
+            font-size: 13px;
+        }
+        .btn-danger-gradient:hover { color: white; box-shadow: 0 8px 20px rgba(255,107,107,0.3); }
+
+        .btn-group-custom {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 12px;
+            margin-bottom: 20px;
+        }
+        .btn-group-custom .btn {
+            padding: 12px;
+            border-radius: 8px;
+            font-weight: 600;
+            border: none;
+            font-size: 13px;
+        }
+
+        /* ── Forms ── */
+        .form-group label {
+            font-weight: 600;
+            color: var(--text);
+            font-size: 12px;
+            text-transform: uppercase;
+            letter-spacing: 0.8px;
+            margin-bottom: 6px;
+        }
+
+        .form-control {
+            background: var(--surface2) !important;
+            border: 1px solid var(--border) !important;
+            border-radius: 8px;
+            color: var(--text) !important;
+            padding: 10px 14px;
+            font-family: 'Inter', sans-serif;
+            font-size: 14px;
+        }
+        .form-control:focus {
+            border-color: var(--accent) !important;
+            box-shadow: 0 0 0 3px rgba(124,108,252,0.15) !important;
+            outline: none;
+        }
+        .form-control::placeholder { color: var(--muted) !important; }
+        .form-control:disabled, .form-control[readonly] { opacity: 0.5; cursor: not-allowed; }
+
+        select.form-control option { background: var(--surface2); color: var(--text); }
+
+        .form-text.text-muted { color: var(--muted) !important; font-size: 11px; }
+
+        /* ── Tables ── */
+        .table { color: var(--text); }
+        .table thead th {
+            background: var(--surface2);
+            border-color: var(--border);
+            color: var(--muted);
+            font-size: 11px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        .table td, .table th { border-color: var(--border); vertical-align: middle; }
+        .table-hover tbody tr:hover { background: rgba(124,108,252,0.06); cursor: default; color: var(--text); }
+        .table-sm td, .table-sm th { padding: 10px 12px; }
+        .badge-light { background: var(--surface3); color: var(--text); font-size: 11px; }
+
+        /* ── Modals ── */
+        .modal-content {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            color: var(--text);
+        }
+        .modal-header {
+            background: var(--surface2);
+            border-bottom: 1px solid var(--border);
+            border-radius: var(--radius) var(--radius) 0 0;
+        }
+        .modal-footer { background: var(--surface2); border-top: 1px solid var(--border); }
+        .modal-title { font-weight: 700; color: var(--text); }
+        .close { color: var(--muted); text-shadow: none; opacity: 1; }
+        .close:hover { color: var(--danger); }
+
+        /* ── Badges ── */
+        .badge-admin       { background: rgba(124,108,252,0.2); color: var(--accent);  border: 1px solid rgba(124,108,252,0.4); border-radius: 20px; padding: 4px 10px; font-size: 11px; font-weight: 700; }
+        .badge-technician  { background: rgba(78,205,196,0.2);  color: var(--accent2); border: 1px solid rgba(78,205,196,0.4);  border-radius: 20px; padding: 4px 10px; font-size: 11px; font-weight: 700; }
+
+        /* ── Bootstrap overrides ── */
+        .btn-outline-primary { border-color: var(--accent); color: var(--accent); background: transparent; font-size: 12px; }
+        .btn-outline-primary:hover { background: rgba(124,108,252,0.15); border-color: var(--accent); color: var(--accent); }
+        .btn-outline-info    { border-color: var(--accent2); color: var(--accent2); background: transparent; }
+        .btn-outline-info:hover    { background: rgba(78,205,196,0.1); border-color: var(--accent2); color: var(--accent2); }
+        .btn-outline-danger  { border-color: var(--danger); color: var(--danger); background: transparent; }
+        .btn-outline-danger:hover  { background: rgba(255,107,107,0.1); border-color: var(--danger); color: var(--danger); }
+        .btn-warning  { background: rgba(255,217,61,0.15); border: 1px solid rgba(255,217,61,0.4); color: var(--warn); font-weight: 700; }
+        .btn-warning:hover { background: rgba(255,217,61,0.25); color: var(--warn); border-color: var(--warn); }
+        .btn-info     { background: rgba(78,205,196,0.15); border: 1px solid rgba(78,205,196,0.4); color: var(--accent2); font-weight: 700; }
+        .btn-info:hover { background: rgba(78,205,196,0.25); color: var(--accent2); }
+        .btn-secondary { background: var(--surface2); border: 1px solid var(--border); color: var(--muted); }
+        .btn-secondary:hover { background: var(--surface3); color: var(--text); }
+        .btn-primary   { background: linear-gradient(135deg, var(--accent) 0%, #5a4fcf 100%); border: none; font-weight: 700; }
+        .btn-primary:hover { box-shadow: 0 8px 20px rgba(124,108,252,0.4); }
+        .btn-danger    { background: linear-gradient(135deg, var(--danger) 0%, #cc4040 100%); border: none; font-weight: 700; }
+        .badge-success { background: rgba(107,203,119,0.15); color: var(--success); border: 1px solid rgba(107,203,119,0.3); }
+        .text-muted    { color: var(--muted) !important; }
+        hr             { border-color: var(--border); }
+        p              { color: var(--muted); }
+        strong         { color: var(--text); }
+
+        /* ── Responsive ── */
+        @media (max-width: 768px) {
+            .sidebar {
+                width: 100%; height: auto;
+                position: relative; top: 0;
+                border-right: none;
+                border-bottom: 1px solid var(--border);
+                flex-direction: row;
+                overflow-x: auto;
+            }
+            .main-content { margin-left: 0; margin-top: 0; padding: 16px; }
+            .btn-group-custom { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+<body>
+    <nav class="navbar" id="navbar">
+        <div class="navbar-brand">
+            <div class="brand-icon">💓</div>
+            Vitals Monitor
+        </div>
+        <div class="user-info">
+            <div class="user-avatar" id="userAvatar">U</div>
+            <span id="userDisplay">User</span>
+            <button onclick="logout()" class="btn btn-sm btn-light ml-3">
+                <i class="fas fa-sign-out-alt"></i> Logout
+            </button>
+        </div>
+    </nav>
+
+    <div class="sidebar" id="sidebar">
+        <div class="sidebar-toggle" onclick="toggleSidebar()">
+            <i class="fas fa-chevron-left"></i>
+        </div>
+        <div class="section-title">Monitor</div>
+        <div class="sidebar-item active" onclick="switchSection('overview')">
+            <i class="fas fa-chart-line"></i>
+            <span>Overview</span>
+        </div>
+        <div class="sidebar-item" onclick="switchSection('sensors')">
+            <i class="fas fa-microchip"></i>
+            <span>Sensors</span>
+        </div>
+        <div class="sidebar-item" onclick="switchSection('vitals')">
+            <i class="fas fa-heartbeat"></i>
+            <span>Vitals History</span>
+        </div>
+        <div class="sidebar-item" onclick="switchSection('therapy')">
+            <i class="fas fa-play-circle"></i>
+            <span>Therapy Sessions</span>
+        </div>
+
+        <div class="section-title" style="margin-top: 30px;">Control</div>
+        <div class="sidebar-item" onclick="switchSection('control')">
+            <i class="fas fa-sliders-h"></i>
+            <span>Device Control</span>
+        </div>
+        <div class="sidebar-item" onclick="switchSection('calibration')">
+            <i class="fas fa-wrench"></i>
+            <span>Calibration</span>
+        </div>
+
+        <div class="section-title" style="margin-top: 30px;">Management</div>
+        <div class="sidebar-item" onclick="switchSection('users')">
+            <i class="fas fa-users"></i>
+            <span>User Management</span>
+        </div>
+        <div class="sidebar-item" onclick="switchSection('profile')">
+            <i class="fas fa-user-circle"></i>
+            <span>My Profile</span>
+        </div>
+
+        <div class="section-title" style="margin-top: 30px;">System</div>
+        <div class="sidebar-item" onclick="switchSection('terminal')">
+            <i class="fas fa-terminal"></i>
+            <span>Debug Terminal</span>
+        </div>
+
+        <div class="section-title" style="margin-top: 30px;">Tools</div>
+        <div class="sidebar-item" onclick="switchSection('testing')">
+            <i class="fas fa-flask"></i>
+            <span>Live Testing</span>
+        </div>
+
+        <div class="section-title" style="margin-top: 30px;">Hardware</div>
+        <a href="/sensor_adjuster.html" class="sidebar-item" id="sidebarHardwareAdjuster" style="text-decoration: none;">
+            <i class="fas fa-plug"></i>
+            <span>Code Adjuster</span>
+        </a>
+    </div>
+
+    <div class="main-content" id="mainContent">
+            <!-- OVERVIEW SECTION -->
+            <div id="overview" class="section-content">
+                <div class="header-title">Live Hardware Monitor</div>
+                
+                <div class="row mb-4" id="vitalsGrid">
+                    <!-- Dynamic metrics cards injected here by JS -->
+                    <div class="col-12 text-center p-5 text-muted">
+                        <i class="fas fa-circle-notch fa-spin fa-2x mb-3"></i>
+                        <p>Waiting for sensor data stream...</p>
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="control-section">
+                            <div class="d-flex justify-content-between align-items-center mb-3">
+                                <h5 class="mb-0"><i class="fas fa-wifi"></i> System Status</h5>
+                                <button class="btn btn-sm btn-outline-primary" id="restartHardwareBtn" onclick="resetSensorsHardware()">
+                                    <i class="fas fa-sync-alt"></i> Restart Sensors
+                                </button>
+                            </div>
+                            <div id="sensorStatusInfo">
+                                <p class="text-muted">Loading sensor status...</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="control-section">
+                            <h5><i class="fas fa-info-circle"></i> Latest Activity</h5>
+                            <div id="activityLog">
+                                <p class="text-muted">No recent activity</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- SENSORS SECTION -->
+            <div id="sensors" class="section-content" style="display: none;">
+                <div class="d-flex justify-content-between align-items-center mb-4">
+                    <div class="header-title mb-0">Active Sensor Registry</div>
+                    <button class="btn btn-primary-gradient" onclick="showCreateSensorModal()">
+                        <i class="fas fa-plus-circle"></i> Add New Device
+                    </button>
+                </div>
+                
+                <div class="tab-container">
+                    <div class="tab-buttons">
+                        <button class="tab-btn active" onclick="switchTab('all-sensors', this)">All Sensors</button>
+                        <button class="tab-btn" onclick="switchTab('online-sensors', this)">Online</button>
+                        <button class="tab-btn" onclick="switchTab('offline-sensors', this)">Offline</button>
+                    </div>
+
+                    <div class="tab-content active" id="all-sensors" style="padding: 20px;">
+                        <div id="allSensorsList"></div>
+                    </div>
+
+                    <div class="tab-content" id="online-sensors" style="padding: 20px;">
+                        <div id="onlineSensorsList"></div>
+                    </div>
+
+                    <div class="tab-content" id="offline-sensors" style="padding: 20px;">
+                        <div id="offlineSensorsList"></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- THERAPY SESSIONS SECTION -->
+            <div id="therapy" class="section-content" style="display: none;">
+                <div class="header-title">Therapy & Monitoring Session</div>
+                
+                <div class="row">
+                    <div class="col-md-5">
+                        <div class="control-section">
+                            <h5><i class="fas fa-cog"></i> Session Configuration</h5>
+                            <div class="form-group">
+                                <label>Session Intensity</label>
+                                <select id="sessionIntensity" class="form-control">
+                                    <option value="LOW">Low (Gentle Circulation)</option>
+                                    <option value="MED" selected>Medium (Standard Rehab)</option>
+                                    <option value="HIGH">High (Active Therapy)</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label>Duration (Minutes)</label>
+                                <input type="number" id="sessionDuration" class="form-control" value="5" min="1" max="60">
+                            </div>
+                            <button class="btn btn-primary-gradient btn-block mt-4" id="btnStartSession" onclick="startTherapySession()">
+                                <i class="fas fa-play"></i> Start New Session
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="col-md-7">
+                        <div class="control-section" id="activeSessionPanel" style="display: none;">
+                            <div class="d-flex justify-content-between">
+                                <h5><i class="fas fa-stethoscope"></i> Live Session Feed</h5>
+                                <span id="sessionTimerBadge" class="session-status-badge status-initial">Initializing...</span>
+                            </div>
+                            
+                            <div class="timer-container">
+                                <div class="timer-ring">
+                                    <div class="timer-progress" id="timerProgress"></div>
+                                    <div class="timer-value" id="sessionTimerText">--:--</div>
+                                </div>
+                            </div>
+
+                            <div class="d-flex justify-content-around mt-4">
+                                <div class="session-avg-card">
+                                    <div class="session-avg-label">Avg HR</div>
+                                    <div class="session-avg-value" id="sessionAvgHR">--</div>
+                                </div>
+                                <div class="session-avg-card">
+                                    <div class="session-avg-label">Avg SpO2</div>
+                                    <div class="session-avg-value" id="sessionAvgSpO2">--</div>
+                                </div>
+                                <div class="session-avg-card">
+                                    <div class="session-avg-label">Avg Temp</div>
+                                    <div class="session-avg-value" id="sessionAvgTemp">--</div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="control-section text-center p-5" id="idleSessionPanel">
+                            <i class="fas fa-bed fa-3x text-muted mb-3"></i>
+                            <p class="text-muted">No active therapy session. configure and start to begin monitoring.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="row mt-4">
+                    <div class="col-md-12">
+                        <div class="control-section">
+                            <h5><i class="fas fa-history"></i> Recent Session Records</h5>
+                            <div class="table-responsive">
+                                <table class="table table-sm table-hover">
+                                    <thead>
+                                        <tr>
+                                            <th>Date</th>
+                                            <th>Intensity</th>
+                                            <th>Duration</th>
+                                            <th>Status</th>
+                                            <th>Avg Metrics</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="sessionHistoryBody">
+                                        <!-- Session history will be loaded here -->
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- VITALS SECTION -->
+            <div id="vitals" class="section-content" style="display: none;">
+                <div class="header-title">Patient Vitals History</div>
+                
+                <div class="row">
+                    <div class="col-md-12">
+                        <div class="control-section">
+                            <div class="d-flex justify-content-between align-items-center mb-3">
+                                <h5><i class="fas fa-history"></i> Recent Vitals History</h5>
+                                <button class="btn btn-sm btn-outline-primary" onclick="fetchVitalsHistory()">
+                                    <i class="fas fa-sync-alt"></i> Refresh History
+                                </button>
+                            </div>
+                            <div class="table-responsive">
+                                <table class="table table-sm table-hover">
+                                    <thead>
+                                        <tr>
+                                            <th>Timestamp</th>
+                                            <th>Sensor</th>
+                                            <th>Metric</th>
+                                            <th>Reading</th>
+                                            <th>Unit</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="vitalsHistoryBody">
+                                        <tr>
+                                            <td colspan="5" class="text-center text-muted">No readings recorded yet</td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- CONTROL SECTION -->
+            <div id="control" class="section-content" style="display: none;">
+                <div class="header-title">Device Control Panel</div>
+                
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="control-section">
+                            <h5><i class="fas fa-robot"></i> Actuator Control</h5>
+                            <div class="btn-group-custom">
+                                <button class="btn btn-primary-gradient" onclick="controlDevice('Actuator_L', 'EXTEND')">
+                                    <i class="fas fa-arrow-right"></i> Extend Actuator L
+                                </button>
+                                <button class="btn btn-primary-gradient" onclick="controlDevice('Actuator_L', 'RETRACT')">
+                                    <i class="fas fa-arrow-left"></i> Retract Actuator L
+                                </button>
+                                <button class="btn btn-primary-gradient" onclick="controlDevice('Actuator_R', 'EXTEND')">
+                                    <i class="fas fa-arrow-right"></i> Extend Actuator R
+                                </button>
+                                <button class="btn btn-primary-gradient" onclick="controlDevice('Actuator_R', 'RETRACT')">
+                                    <i class="fas fa-arrow-left"></i> Retract Actuator R
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col-md-6">
+                        <div class="control-section">
+                            <h5><i class="fas fa-hand-paper"></i> Glove Remote Control</h5>
+                            <p class="text-muted small">Mimic physical button presses on the glove controller.</p>
+                            <div class="btn-group-custom">
+                                <button class="btn btn-warning" onclick="controlDevice('Gloves_Therapy', 'CLICK_POWER')">
+                                    <i class="fas fa-power-off"></i> Toggle Power (K3)
+                                </button>
+                                <button class="btn btn-primary-gradient" onclick="controlDevice('Gloves_Therapy', 'CLICK_FORCE')">
+                                    <i class="fas fa-tachometer-alt"></i> Cycle Force (K2)
+                                </button>
+                                <button class="btn btn-info" onclick="controlDevice('Gloves_Therapy', 'CLICK_MODE')">
+                                    <i class="fas fa-sync-alt"></i> Cycle Mode (K4)
+                                </button>
+                            </div>
+                            <div class="mt-3">
+                                <button class="btn btn-danger-gradient btn-sm btn-block" onclick="controlDevice('RECOVERY', 'RESET')">
+                                    <i class="fas fa-exclamation-triangle"></i> Emergency Stop
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- CALIBRATION SECTION -->
+            <div id="calibration" class="section-content" style="display: none;">
+                <div class="header-title">Sensor Calibration Adjustment</div>
+                
+                <div class="row">
+                    <div class="col-md-8">
+                        <div class="control-section">
+                            <h5><i class="fas fa-sliders-h"></i> Calibration Offsets</h5>
+                            <form id="calibrationForm">
+                                <div class="form-group">
+                                    <label for="temp_offset">Temperature Offset (°C)</label>
+                                    <input type="number" id="temp_offset" class="form-control" step="0.1" placeholder="0.0">
+                                    <small class="form-text text-muted">Adjust in range: -5.0 to +5.0</small>
+                                </div>
+
+                                <div class="form-group">
+                                    <label for="bpm_offset">Heart Rate Offset (BPM)</label>
+                                    <input type="number" id="bpm_offset" class="form-control" step="1" placeholder="0">
+                                    <small class="form-text text-muted">Adjust in range: -30 to +30</small>
+                                </div>
+
+                                <div class="form-group">
+                                    <label for="spo2_offset">SpO2 Offset (%)</label>
+                                    <input type="number" id="spo2_offset" class="form-control" step="1" placeholder="0">
+                                    <small class="form-text text-muted">Adjust in range: -5 to +5</small>
+                                </div>
+
+                                <button type="button" onclick="saveCalibration()" class="btn btn-primary-gradient btn-lg" style="width: 100%; margin-top: 20px;">
+                                    <i class="fas fa-save"></i> Apply Calibration
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+
+                    <div class="col-md-4">
+                        <div class="control-section">
+                            <h5><i class="fas fa-info-circle"></i> Information</h5>
+                            <p><strong>Last Updated:</strong> <span id="lastCalibrationTime">Never</span></p>
+                            <p><strong>Status:</strong> <span id="calibrationStatus" class="badge badge-success">Ready</span></p>
+                            <hr>
+                            <p style="font-size: 12px; color: #666;">Changes will be sent to all connected sensors within 60 seconds.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- USER MANAGEMENT SECTION -->
+            <div id="users" class="section-content" style="display: none;">
+                <div class="header-title">User Account Management</div>
+                
+                <div class="control-section">
+                    <div class="d-flex justify-content-between align-items-center mb-4">
+                        <h5><i class="fas fa-users-cog"></i> System Users</h5>
+                        <button class="btn btn-primary-gradient" onclick="showCreateUserModal()">
+                            <i class="fas fa-user-plus"></i> Add New User
+                        </button>
+                    </div>
+                    
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Username</th>
+                                    <th>Email</th>
+                                    <th>Role</th>
+                                    <th>Created At</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="usersTableBody">
+                                <!-- Users will be loaded here -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- MY PROFILE SECTION -->
+            <div id="profile" class="section-content" style="display: none;">
+                <div class="header-title">My Profile</div>
+                
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="control-section">
+                            <h5><i class="fas fa-user-edit"></i> Edit Profile</h5>
+                            <form id="profileForm">
+                                <div class="form-group">
+                                    <label>Username</label>
+                                    <input type="text" id="profUsername" class="form-control" readonly disabled>
+                                </div>
+                                <div class="form-group">
+                                    <label>Role</label>
+                                    <input type="text" id="profRole" class="form-control" readonly disabled>
+                                </div>
+                                <div class="form-group">
+                                    <label for="profEmail">Email Address</label>
+                                    <input type="email" id="profEmail" class="form-control" required>
+                                </div>
+                                <div class="form-group">
+                                    <label for="profPassword">New Password (Leave blank to keep current)</label>
+                                    <input type="password" id="profPassword" class="form-control">
+                                </div>
+                                <button type="submit" class="btn btn-primary-gradient btn-block mt-4">
+                                    <i class="fas fa-user-check"></i> Update Profile
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- TERMINAL SECTION -->
+            <div id="terminal" class="section-content" style="display: none;">
+                <div class="header-title">System Debug Terminal</div>
+                
+                <div class="control-section p-0" style="border: none; background: transparent;">
+                    <div class="terminal-header">
+                        <span><i class="fas fa-terminal"></i> Console Output</span>
+                        <input type="text" class="terminal-filter" placeholder="Filter logs..." oninput="filterLogs(this.value)">
+                    </div>
+                    <div id="terminalOutput" class="terminal-output"></div>
+                    <div class="mt-3">
+                        <button onclick="clearTerminal()" class="btn btn-secondary">
+                            <i class="fas fa-trash"></i> Clear Console
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- LIVE TESTING SECTION -->
+            <div id="testing" class="section-content" style="display: none;">
+                <div class="header-title">Live Sensor Testing & Simulation</div>
+                
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="control-section">
+                            <h5><i class="fas fa-heartbeat"></i> Simulate Sensor Heartbeat</h5>
+                            <p style="color: #666; font-size: 13px;">Send a heartbeat signal from a test sensor</p>
+                            
+                            <div class="form-group">
+                                <label for="testSensorType">Sensor Type</label>
+                                <select id="testSensorType" class="form-control">
+                                    <option value="MAX30102">MAX30102 (Heart Rate)</option>
+                                    <option value="MLX90614">MLX90614 (Temperature)</option>
+                                    <option value="Actuator_L">Actuator_L (Linear)</option>
+                                    <option value="Actuator_R">Actuator_R (Linear)</option>
+                                    <option value="Gloves_Therapy">Gloves_Therapy (5V)</option>
+                                </select>
+                            </div>
+
+                            <div class="form-group">
+                                <label for="testSensorStatus">Status</label>
+                                <select id="testSensorStatus" class="form-control">
+                                    <option value="ONLINE">🟢 Online</option>
+                                    <option value="OFFLINE">🔴 Offline</option>
+                                </select>
+                            </div>
+
+                            <button type="button" onclick="testSensorHeartbeat()" class="btn btn-primary-gradient btn-block">
+                                <i class="fas fa-pulse"></i> Send Heartbeat
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="col-md-6">
+                        <div class="control-section">
+                            <h5><i class="fas fa-vials"></i> Test Vital Readings</h5>
+                            <p style="color: #666; font-size: 13px;">Simulate realistic sensor readings</p>
+
+                            <div class="form-group">
+                                <label for="testHeartRate">Heart Rate (BPM)</label>
+                                <input type="number" id="testHeartRate" class="form-control" value="72" min="40" max="120">
+                            </div>
+
+                            <div class="form-group">
+                                <label for="testSpO2">SpO2 Level (%)</label>
+                                <input type="number" id="testSpO2" class="form-control" value="98" min="80" max="100">
+                            </div>
+
+                            <div class="form-group">
+                                <label for="testTemp">Temperature (°C)</label>
+                                <input type="number" id="testTemp" class="form-control" value="37.0" min="35" max="41" step="0.1">
+                            </div>
+
+                            <button type="button" onclick="testVitalReading()" class="btn btn-success btn-block">
+                                <i class="fas fa-stethoscope"></i> Simulate Reading
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="row mt-3">
+                    <div class="col-md-12">
+                        <div class="control-section">
+                            <h5><i class="fas fa-microchip"></i> Quick Sensor Tests</h5>
+                            <div class="btn-group-custom">
+                                <button type="button" onclick="testQuickHeartbeat()" class="btn btn-primary-gradient">
+                                    <i class="fas fa-heartbeat"></i> Test MAX30102
+                                </button>
+                                <button type="button" onclick="testQuickTemperature()" class="btn btn-warning">
+                                    <i class="fas fa-thermometer-half"></i> Test MLX90614
+                                </button>
+                                <button type="button" onclick="testAllSensors()" class="btn btn-primary-gradient">
+                                    <i class="fas fa-check-circle"></i> Test All
+                                </button>
+                                <button type="button" onclick="simulateOfflineSensor()" class="btn btn-danger-gradient">
+                                    <i class="fas fa-times-circle"></i> Simulate Offline
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="row mt-3">
+                    <div class="col-md-12">
+                        <div class="control-section">
+                            <h5><i class="fas fa-history"></i> Test History</h5>
+                            <div id="testHistory" style="max-height: 300px; overflow-y: auto;">
+                                <p class="text-muted">No tests run yet</p>
+                            </div>
+                            <button type="button" onclick="clearTestHistory()" class="btn btn-secondary btn-sm mt-2">
+                                <i class="fas fa-trash"></i> Clear History
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div> <!-- End of testing section -->
+
+        </div> <!-- End of main-content -->
+
+    <!-- User Modal -->
+    <div class="modal fade" id="userModal" tabindex="-1" role="dialog">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="userModalTitle">Add New User</h5>
+                    <button type="button" class="close" data-dismiss="modal">
+                        <span>&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <form id="userForm">
+                        <input type="hidden" id="userId">
+                        <div class="form-group">
+                            <label for="userName">Username</label>
+                            <input type="text" id="userName" class="form-control" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="userEmail">Email</label>
+                            <input type="email" id="userEmail" class="form-control" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="userPassword">Password</label>
+                            <input type="password" id="userPassword" class="form-control">
+                            <small class="form-text text-muted" id="pwHint">Leave blank to keep existing password</small>
+                        </div>
+                        <div class="form-group">
+                            <label for="userRole">Role</label>
+                            <select id="userRole" class="form-control" required>
+                                <option value="technician">Technician</option>
+                                <option value="admin">Admin</option>
+                            </select>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
+                    <button type="button" class="btn btn-primary" onclick="saveUser()">Save User</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- Sensor Modal -->
+    <div class="modal fade" id="sensorModal" tabindex="-1" role="dialog">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="sensorModalTitle">Add New Sensor</h5>
+                    <button type="button" class="close" data-dismiss="modal">
+                        <span>&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <form id="sensorForm">
+                        <input type="hidden" id="sensorId">
+                        <div class="form-group">
+                            <label for="sensorTypeName">Sensor Type / Name</label>
+                            <input type="text" id="sensorTypeName" class="form-control" placeholder="e.g. MAX30102" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="sensorPin">Pin Assignment</label>
+                            <input type="text" id="sensorPin" class="form-control" placeholder="e.g. I2C (3.3V)">
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
+                    <button type="button" class="btn btn-primary" onclick="saveSensor()">Save Sensor</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.5.4/dist/umd/popper.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+
+    <script>
+        // Authentication
+        const token = localStorage.getItem('token');
+        const user = JSON.parse(localStorage.getItem('user'));
+        
+        if (!token || !user) {
+            window.location.href = '/login.html';
+        }
+
+        if (user.role !== 'admin') {
+            alert('Access Denied: Admin only dashboard');
+            window.location.href = '/login.html';
+        }
+
+        // Set user display
+        document.getElementById('userDisplay').textContent = user.username;
+        document.getElementById('userAvatar').textContent = user.username.charAt(0).toUpperCase();
+
+        // Section switching
+        function switchSection(section) {
+            document.querySelectorAll('.section-content').forEach(el => el.style.display = 'none');
+            document.querySelectorAll('.sidebar-item').forEach(el => el.classList.remove('active'));
+            
+            const element = document.getElementById(section);
+            if (element) element.style.display = 'block';
+            
+            // Find sidebar item and activate it
+            const sidebarItems = document.querySelectorAll('.sidebar-item');
+            sidebarItems.forEach(item => {
+                const onclick = item.getAttribute('onclick');
+                if (onclick && onclick.includes(`'${section}'`)) {
+                    item.classList.add('active');
+                }
+            });
+
+            // Refresh data when switching sections
+            if (section === 'vitals') fetchVitalsHistory();
+            if (section === 'therapy') {
+                fetchSessionHistory();
+                refreshActiveSession();
+            }
+            if (section === 'control') logToTerminal('[SYSTEM] Control panel ready');
+            if (section === 'calibration') fetchConfig();
+            if (section === 'users') loadUsers();
+            if (section === 'profile') loadProfile();
+        }
+
+        // Tab switching
+        function switchTab(tabId, button) {
+            const parent = button.closest('.tab-container');
+            parent.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
+            parent.querySelectorAll('.tab-btn').forEach(el => el.classList.remove('active'));
+            
+            parent.querySelector('#' + tabId).classList.add('active');
+            button.classList.add('active');
+        }
+
+        // Terminal
+        const terminalElement = document.getElementById('terminalOutput');
+        let logBuffer = []; // { msg, timestamp, tag, html }
+        
+        function logToTerminal(msg) {
+            if (!terminalElement) return;
+            const now = new Date();
+            const time = now.toLocaleTimeString();
+            
+            // Extract tag if present: [TAG] message
+            let tag = 'SYS';
+            let cleanMsg = msg;
+            const tagMatch = msg.match(/^\[(.*?)\]/);
+            if (tagMatch) {
+                tag = tagMatch[1];
+                cleanMsg = msg.replace(`[${tag}]`, '').trim();
+            }
+
+            let color = '#7aa2f7'; // Default blue
+            let tagColor = '#3b4261';
+            
+            if (tag.includes('ERROR')) { color = '#f7768e'; tagColor = 'rgba(247,118,142,0.2)'; }
+            else if (tag.includes('AUTH') || tag.includes('USER')) { color = '#bb9af7'; tagColor = 'rgba(187,154,247,0.2)'; }
+            else if (tag.includes('CONTROL')) { color = '#e0af68'; tagColor = 'rgba(224,175,104,0.2)'; }
+            else if (tag.includes('SENSOR') || tag.includes('HARDWARE')) { color = '#73daca'; tagColor = 'rgba(115,218,202,0.2)'; }
+            else if (tag.includes('DB_SYNC') || tag.includes('VITALS')) { color = '#9ece6a'; tagColor = 'rgba(158,206,106,0.2)'; }
+            else if (tag.includes('CONFIG')) { color = '#b4f9f8'; tagColor = 'rgba(180,249,248,0.2)'; }
+
+            const logId = Date.now() + Math.random();
+            const html = `
+                <div class="log-line" id="log-${logId}" data-text="${msg.toLowerCase()}">
+                    <span style="color: #565f89;">[${time}]</span>
+                    <span class="log-tag" style="background: ${tagColor}; color: ${color};">${tag}</span>
+                    <span style="color: ${color}">${cleanMsg}</span>
+                </div>`;
+            
+            logBuffer.push({ id: logId, text: msg.toLowerCase(), html: html });
+            
+            // Prune buffer (keep last 150)
+            if (logBuffer.length > 150) logBuffer.shift();
+
+            // Refresh terminal display
+            renderTerminal();
+        }
+
+        function renderTerminal() {
+            const filter = document.querySelector('.terminal-filter')?.value.toLowerCase() || '';
+            terminalElement.innerHTML = logBuffer
+                .filter(log => !filter || log.text.includes(filter))
+                .map(log => log.html)
+                .join('');
+            terminalElement.scrollTop = terminalElement.scrollHeight;
+        }
+
+        function filterLogs(val) {
+            renderTerminal();
+        }
+
+        function clearTerminal() {
+            logBuffer = [];
+            renderTerminal();
+        }
+
+        // Fetch sensors
+        async function fetchSensors() {
+            try {
+                const res = await fetch('/api/admin/sensors', {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                const data = await res.json();
+                
+                const allList = document.getElementById('allSensorsList');
+                const onlineList = document.getElementById('onlineSensorsList');
+                const offlineList = document.getElementById('offlineSensorsList');
+                
+                if (!allList) return;
+
+                allList.innerHTML = '';
+                onlineList.innerHTML = '';
+                offlineList.innerHTML = '';
+
+                let onlineCount = 0;
+                let offlineCount = 0;
+
+                data.forEach(s => {
+                    const isOnline = s.status === 'ONLINE';
+                    if (isOnline) onlineCount++;
+                    else offlineCount++;
+
+                    const item = `
+                        <div class="sensor-item ${isOnline ? '' : 'offline'}">
+                            <div class="sensor-info">
+                                <h5>${s.sensor_type}</h5>
+                                <small><i class="fas fa-microchip"></i> Pin: ${s.pin_assignment || 'Auto'}</small>
+                            </div>
+                            <div class="sensor-status">
+                                <div class="mr-3">
+                                    <button class="btn btn-sm btn-outline-info" onclick="editSensor(${s.id})"><i class="fas fa-edit"></i></button>
+                                    <button class="btn btn-sm btn-outline-danger" onclick="deleteSensor(${s.id})"><i class="fas fa-trash"></i></button>
+                                </div>
+                                <span class="status-dot ${isOnline ? '' : 'offline'}"></span>
+                                <span class="status-badge ${isOnline ? '' : 'offline'}">
+                                    ${isOnline ? '🟢 Online' : '🔴 Offline'}
+                                </span>
+                            </div>
+                        </div>
+                    `;
+
+                    allList.innerHTML += item;
+                    if (isOnline) onlineList.innerHTML += item;
+                    else offlineList.innerHTML += item;
+                });
+
+                // Update system status cards
+                const statusElement = document.getElementById('systemStatus');
+                const statusInfo = document.getElementById('sensorStatusInfo');
+                if (statusElement) {
+                    if (onlineCount > 0) {
+                        statusElement.innerHTML = '<i class="fas fa-check-circle" style="color: #4ecdc4;"></i>';
+                        statusElement.parentElement.querySelector('.metric-subvalue').textContent = 'Online';
+                        statusInfo.innerHTML = `<p><strong style="color: #4ecdc4;">✓ System Online</strong></p><p>${onlineCount} sensor(s) connected</p>`;
+                    } else {
+                        statusElement.innerHTML = '<i class="fas fa-times-circle" style="color: #ff6b6b;"></i>';
+                        statusElement.parentElement.querySelector('.metric-subvalue').textContent = 'Offline';
+                        statusInfo.innerHTML = `<p><strong style="color: #ff6b6b;">✗ System Offline</strong></p><p>No sensors detected</p>`;
+                    }
+                }
+
+                logToTerminal(`[SENSOR] Registry updated: ${onlineCount} online, ${offlineCount} offline`);
+            } catch (e) {
+                logToTerminal(`[ERROR] Failed to fetch sensors: ${e.message}`);
+            }
+        }
+
+        // Fetch configuration
+        async function fetchConfig() {
+            try {
+                const res = await fetch('/api/admin/config', {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                const data = await res.json();
+                const tEl = document.getElementById('temp_offset');
+                const bEl = document.getElementById('bpm_offset');
+                const sEl = document.getElementById('spo2_offset');
+                const tsEl = document.getElementById('lastCalibrationTime');
+                if (tEl)  tEl.value  = data.temp_offset  || 0;
+                if (bEl)  bEl.value  = data.bpm_offset   || 0;
+                if (sEl)  sEl.value  = data.spo2_offset  || 0;
+                if (tsEl) tsEl.textContent = new Date().toLocaleString();
+                logToTerminal(`[CONFIG] Loaded offsets: T=${data.temp_offset}, BPM=${data.bpm_offset}, SpO2=${data.spo2_offset}`);
+            } catch (e) {
+                logToTerminal(`[ERROR] Failed to load config: ${e.message}`);
+            }
+        }
+
+        // Control device
+        async function controlDevice(device, action) {
+            logToTerminal(`[CONTROL] Sending ${action} to ${device}...`);
+            try {
+                const res = await fetch('/api/admin/control', {
+                    method: 'POST',
+                    headers: { 
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`
+                    },
+                    body: JSON.stringify({ device, action })
+                });
+                const data = await res.json();
+                if (data.success) {
+                    logToTerminal(`[CONTROL] ✓ ${data.message}`);
+                } else {
+                    logToTerminal(`[CONTROL] ✗ Failed: ${data.message}`);
+                }
+            } catch (e) {
+                logToTerminal(`[ERROR] ${e.message}`);
+            }
+        }
+
+        // Save calibration
+        async function saveCalibration() {
+            const temp = parseFloat(document.getElementById('temp_offset').value) || 0;
+            const bpm = parseInt(document.getElementById('bpm_offset').value) || 0;
+            const spo2 = parseInt(document.getElementById('spo2_offset').value) || 0;
+
+            logToTerminal(`[CALIBRATION] Applying: T=${temp}°C, BPM=${bpm}, SpO2=${spo2}%`);
+
+            try {
+                const res = await fetch('/api/admin/config', {
+                    method: 'POST',
+                    headers: { 
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`
+                    },
+                    body: JSON.stringify({ temp_offset: temp, bpm_offset: bpm, spo2_offset: spo2 })
+                });
+                const data = await res.json();
+                if (data.success) {
+                    logToTerminal(`[CALIBRATION] ✓ Applied successfully. Propagating to sensors...`);
+                    document.getElementById('calibrationStatus').textContent = 'Updated';
+                    document.getElementById('calibrationStatus').className = 'badge badge-success';
+                } else {
+                    logToTerminal(`[CALIBRATION] ✗ Failed to save`);
+                }
+            } catch (e) {
+                logToTerminal(`[ERROR] ${e.message}`);
+            }
+        }
+
+        // Hardware Reset
+        async function resetSensorsHardware() {
+            const btn = document.getElementById('restartHardwareBtn');
+            const originalContent = btn.innerHTML;
+            btn.innerHTML = '<i class="fas fa-circle-notch fa-spin"></i> Resetting...';
+            btn.disabled = true;
+
+            logToTerminal(`[HARDWARE] Sending re-synchronization signal to sensors...`);
+
+            try {
+                const res = await fetch('/api/admin/hardware/reset', {
+                    method: 'POST',
+                    headers: { 
+                        'Authorization': `Bearer ${token}`
+                    }
+                });
+                const data = await res.json();
+                
+                if (data.success) {
+                    logToTerminal(`[HARDWARE] ✓ Reset signal acknowledged.`);
+                    setTimeout(() => {
+                        logToTerminal(`[HARDWARE] ✓ Waiting for sensor re-calibration...`);
+                    }, 1000);
+                } else {
+                    logToTerminal(`[ERROR] Hardware reset failed: ${data.message}`);
+                }
+            } catch (e) {
+                logToTerminal(`[ERROR] Reset connection error: ${e.message}`);
+            } finally {
+                setTimeout(() => {
+                    btn.innerHTML = originalContent;
+                    btn.disabled = false;
+                }, 3000);
+            }
+        }
+
+        // ========== USER MANAGEMENT FUNCTIONS ==========
+
+        async function loadUsers() {
+            try {
+                const res = await fetch('/api/admin/users', {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                const users = await res.json();
+                const tbody = document.getElementById('usersTableBody');
+                tbody.innerHTML = '';
+                
+                users.forEach(u => {
+                    const tr = document.createElement('tr');
+                    tr.innerHTML = `
+                        <td>${u.username}</td>
+                        <td>${u.email}</td>
+                        <td><span class="badge ${u.role === 'admin' ? 'badge-admin' : 'badge-technician'}">${u.role}</span></td>
+                        <td>${new Date(u.created_at).toLocaleDateString()}</td>
+                        <td>
+                            <button class="btn btn-sm btn-info" onclick="editUser(${u.id})"><i class="fas fa-edit"></i></button>
+                            ${u.id !== user.id ? `<button class="btn btn-sm btn-danger" onclick="deleteUser(${u.id})"><i class="fas fa-trash"></i></button>` : ''}
+                        </td>
+                    `;
+                    tbody.appendChild(tr);
+                });
+                logToTerminal(`[USER] User list loaded: ${users.length} accounts`);
+            } catch (e) {
+                logToTerminal(`[ERROR] Failed to load users: ${e.message}`);
+            }
+        }
+
+        function showCreateUserModal() {
+            document.getElementById('userModalTitle').textContent = 'Add New User';
+            document.getElementById('userForm').reset();
+            document.getElementById('userId').value = '';
+            document.getElementById('userPassword').required = true;
+            document.getElementById('pwHint').textContent = 'Minimum 6 characters';
+            $('#userModal').modal('show');
+        }
+
+        async function editUser(id) {
+            try {
+                const res = await fetch(`/api/admin/users/${id}`, {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                const u = await res.json();
+                
+                document.getElementById('userModalTitle').textContent = 'Edit User: ' + u.username;
+                document.getElementById('userId').value = u.id;
+                document.getElementById('userName').value = u.username;
+                document.getElementById('userEmail').value = u.email;
+                document.getElementById('userRole').value = u.role;
+                document.getElementById('userPassword').value = '';
+                document.getElementById('userPassword').required = false;
+                document.getElementById('pwHint').textContent = 'Leave blank to keep current password';
+                
+                $('#userModal').modal('show');
+            } catch (e) {
+                logToTerminal(`[ERROR] Failed to load user details: ${e.message}`);
+            }
+        }
+
+        async function saveUser() {
+            const id = document.getElementById('userId').value;
+            const username = document.getElementById('userName').value;
+            const email = document.getElementById('userEmail').value;
+            const password = document.getElementById('userPassword').value;
+            const role = document.getElementById('userRole').value;
+
+            const method = id ? 'PUT' : 'POST';
+            const url = id ? `/api/admin/users/${id}` : '/api/admin/users';
+
+            try {
+                const res = await fetch(url, {
+                    method: method,
+                    headers: { 
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`
+                    },
+                    body: JSON.stringify({ username, email, password, role })
+                });
+                const data = await res.json();
+                if (data.success) {
+                    logToTerminal(`[USER] ✓ User ${id ? 'updated' : 'created'} successfully`);
+                    $('#userModal').modal('hide');
+                    loadUsers();
+                } else {
+                    logToTerminal(`[USER] ✗ Error: ${data.message}`);
+                    alert(data.message);
+                }
+            } catch (e) {
+                logToTerminal(`[ERROR] ${e.message}`);
+            }
+        }
+
+        async function deleteUser(id) {
+            if (!confirm('Are you sure you want to delete this user? This action cannot be undone.')) return;
+            
+            try {
+                const res = await fetch(`/api/admin/users/${id}`, {
+                    method: 'DELETE',
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                const data = await res.json();
+                if (data.success) {
+                    logToTerminal(`[USER] ✓ User deleted successfully`);
+                    loadUsers();
+                } else {
+                    logToTerminal(`[USER] ✗ Error deleting user`);
+                }
+            } catch (e) {
+                logToTerminal(`[ERROR] ${e.message}`);
+            }
+        }
+
+        // ========== SENSOR MANAGEMENT FUNCTIONS ==========
+
+        function showCreateSensorModal() {
+            document.getElementById('sensorModalTitle').textContent = 'Add New Sensor';
+            document.getElementById('sensorForm').reset();
+            document.getElementById('sensorId').value = '';
+            $('#sensorModal').modal('show');
+        }
+
+        async function editSensor(id) {
+            try {
+                const res = await fetch('/api/admin/sensors', {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                const sensors = await res.json();
+                const s = sensors.find(item => item.id === id);
+                
+                if (s) {
+                    document.getElementById('sensorModalTitle').textContent = 'Edit Sensor: ' + s.sensor_type;
+                    document.getElementById('sensorId').value = s.id;
+                    document.getElementById('sensorTypeName').value = s.sensor_type;
+                    document.getElementById('sensorPin').value = s.pin_assignment;
+                    $('#sensorModal').modal('show');
+                }
+            } catch (e) {
+                logToTerminal(`[ERROR] Failed to load sensor details: ${e.message}`);
+            }
+        }
+
+        async function saveSensor() {
+            const id = document.getElementById('sensorId').value;
+            const sensor_type = document.getElementById('sensorTypeName').value;
+            const pin_assignment = document.getElementById('sensorPin').value;
+
+            const method = id ? 'PUT' : 'POST';
+            const url = id ? `/api/admin/sensors/${id}` : '/api/admin/sensors';
+
+            try {
+                const res = await fetch(url, {
+                    method: method,
+                    headers: { 
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`
+                    },
+                    body: JSON.stringify({ sensor_type, pin_assignment })
+                });
+                const data = await res.json();
+                if (data.success) {
+                    logToTerminal(`[SENSOR] ✓ Sensor ${id ? 'updated' : 'created'} successfully`);
+                    $('#sensorModal').modal('hide');
+                    fetchSensors();
+                } else {
+                    logToTerminal(`[SENSOR] ✗ Error: ${data.message}`);
+                    alert(data.message);
+                }
+            } catch (e) {
+                logToTerminal(`[ERROR] ${e.message}`);
+            }
+        }
+
+        async function deleteSensor(id) {
+            if (!confirm('Are you sure you want to delete this sensor?')) return;
+            
+            try {
+                const res = await fetch(`/api/admin/sensors/${id}`, {
+                    method: 'DELETE',
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                const data = await res.json();
+                if (data.success) {
+                    logToTerminal(`[SENSOR] ✓ Sensor deleted successfully`);
+                    fetchSensors();
+                } else {
+                    logToTerminal(`[SENSOR] ✗ Error deleting sensor`);
+                }
+            } catch (e) {
+                logToTerminal(`[ERROR] ${e.message}`);
+            }
+        }
+
+        // ========== PROFILE FUNCTIONS ==========
+
+        function loadProfile() {
+            document.getElementById('profUsername').value = user.username;
+            document.getElementById('profRole').value = user.role;
+            document.getElementById('profEmail').value = user.email;
+            logToTerminal(`[PROFILE] Profile data loaded`);
+        }
+
+        document.getElementById('profileForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const email = document.getElementById('profEmail').value;
+            const password = document.getElementById('profPassword').value;
+
+            try {
+                const res = await fetch('/api/auth/profile', {
+                    method: 'PUT',
+                    headers: { 
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`
+                    },
+                    body: JSON.stringify({ email, password })
+                });
+                const data = await res.json();
+                if (data.success) {
+                    logToTerminal(`[PROFILE] ✓ Profile updated successfully`);
+                    user.email = email;
+                    localStorage.setItem('user', JSON.stringify(user));
+                    alert('Profile updated successfully');
+                } else {
+                    logToTerminal(`[PROFILE] ✗ Update failed: ${data.message}`);
+                }
+            } catch (e) {
+                logToTerminal(`[ERROR] ${e.message}`);
+            }
+        });
+
+        // Logout
+        function logout() {
+            localStorage.removeItem('token');
+            localStorage.removeItem('user');
+            window.location.href = '/login.html';
+        }
+
+        // ========== LIVE TESTING FUNCTIONS ==========
+        
+        async function testSensorHeartbeat() {
+            const sensorType = document.getElementById('testSensorType').value;
+            const status = document.getElementById('testSensorStatus').value;
+
+            logToTerminal(`[TEST] Sending ${status} heartbeat for ${sensorType}...`);
+            addTestHistory(`Heartbeat: ${sensorType} → ${status}`);
+
+            try {
+                const res = await fetch('/api/admin/sensors/heartbeat', {
+                    method: 'POST',
+                    headers: { 
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`
+                    },
+                    body: JSON.stringify({ sensor_type: sensorType, status: status })
+                });
+                const data = await res.json();
+                if (data.success) {
+                    logToTerminal(`[TEST] ✓ Heartbeat sent successfully`);
+                    addTestHistory(`✓ ${sensorType} heartbeat registered`);
+                    fetchSensors(); // Refresh sensor list
+                } else {
+                    logToTerminal(`[TEST] ✗ Failed to send heartbeat`);
+                }
+            } catch (e) {
+                logToTerminal(`[TEST] ✗ Error: ${e.message}`);
+            }
+        }
+
+        async function testVitalReading() {
+            const hr = parseInt(document.getElementById('testHeartRate').value);
+            const spo2 = parseInt(document.getElementById('testSpO2').value);
+            const temp = parseFloat(document.getElementById('testTemp').value);
+
+            logToTerminal(`[TEST] Simulating vitals: HR=${hr}bpm, SpO2=${spo2}%, Temp=${temp}°C`);
+            addTestHistory(`Vital Reading: HR=${hr}, SpO2=${spo2}, Temp=${temp}`);
+
+            // Update metric display
+            document.getElementById('heartRateValue').textContent = hr;
+            document.getElementById('spo2Value').textContent = spo2;
+            document.getElementById('tempValue').textContent = temp;
+
+            // Persistence
+            try {
+                const readings = [
+                    { sensor_type: 'MAX30102', metric: 'heart_rate', value: hr, unit: 'bpm' },
+                    { sensor_type: 'MAX30102', metric: 'spo2', value: spo2, unit: '%' },
+                    { sensor_type: 'MLX90614', metric: 'temperature', value: temp, unit: '°C' }
+                ];
+
+                for (const r of readings) {
+                    await fetch('/api/admin/vitals', {
+                        method: 'POST',
+                        headers: { 
+                            'Content-Type': 'application/json',
+                            'Authorization': `Bearer ${token}`
+                        },
+                        body: JSON.stringify(r)
+                    });
+                }
+                logToTerminal(`[TEST] ✓ Vitals persisted to history`);
+            } catch (e) {
+                logToTerminal(`[ERROR] Failed to persist vitals: ${e.message}`);
+            }
+        }
+
+        async function fetchVitalsHistory() {
+            try {
+                const res = await fetch('/api/admin/vitals?limit=50', {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                const data = await res.json();
+                
+                // 1. Group latest readings by Sensor_Metric
+                const latest = {};
+                data.forEach(v => {
+                    const key = `${v.sensor_type}_${v.metric}`;
+                    if (!latest[key]) latest[key] = v;
+                });
+
+                // 2. Update Dynamic Vitals Grid
+                const grid = document.getElementById('vitalsGrid');
+                if (grid && Object.keys(latest).length > 0) {
+                    grid.innerHTML = Object.values(latest).map(v => {
+                        let styleClass = '';
+                        if (v.metric.toLowerCase().includes('temp')) styleClass = 'warning';
+                        if (v.metric.toLowerCase().includes('spo2')) styleClass = 'success';
+                        if (v.metric.toLowerCase().includes('heart') || v.metric.toLowerCase().includes('rate')) styleClass = '';
+                        if (v.metric.toLowerCase().includes('err') || v.metric.toLowerCase().includes('fail')) styleClass = 'danger';
+
+                        const metricName = v.metric.replace('_', ' ');
+                        return `
+                            <div class="col-md-3">
+                                <div class="metric-card ${styleClass}">
+                                    <div class="metric-label">${v.sensor_type} • ${metricName}</div>
+                                    <div class="metric-value">${parseFloat(v.value).toFixed(v.value % 1 === 0 ? 0 : 2)}</div>
+                                    <div class="metric-subvalue">${v.unit || ''}</div>
+                                </div>
+                            </div>`;
+                    }).join('');
+                }
+
+                // 3. Update History Table
+                const tbody = document.getElementById('vitalsHistoryBody');
+                if (!tbody) return;
+
+                if (data.length === 0) {
+                    tbody.innerHTML = '<tr><td colspan="5" class="text-center text-muted">No readings recorded yet</td></tr>';
+                    return;
+                }
+
+                tbody.innerHTML = '';
+                data.slice(0, 20).forEach(v => {
+                    const tr = document.createElement('tr');
+                    tr.innerHTML = `
+                        <td style="font-size: 12px;">${new Date(v.timestamp).toLocaleString()}</td>
+                        <td><span class="badge badge-light">${v.sensor_type}</span></td>
+                        <td>${v.metric.replace('_', ' ')}</td>
+                        <td class="font-weight-bold">${v.value}</td>
+                        <td class="text-muted">${v.unit || ''}</td>
+                    `;
+                    tbody.appendChild(tr);
+                });
+                logToTerminal(`[VITALS] Dashboard updated with ${data.length} recent records`);
+            } catch (e) {
+                logToTerminal(`[ERROR] Failed to fetch vitals: ${e.message}`);
+            }
+        }
+
+        function testQuickHeartbeat() {
+            document.getElementById('testSensorType').value = 'MAX30102';
+            document.getElementById('testSensorStatus').value = 'ONLINE';
+            testSensorHeartbeat();
+        }
+
+        function testQuickTemperature() {
+            document.getElementById('testSensorType').value = 'MLX90614';
+            document.getElementById('testSensorStatus').value = 'ONLINE';
+            testSensorHeartbeat();
+        }
+
+        async function testAllSensors() {
+            logToTerminal(`[TEST] Running comprehensive sensor test...`);
+            addTestHistory('Full system test started');
+
+            const sensors = [
+                { name: 'MAX30102', status: 'ONLINE' },
+                { name: 'MLX90614', status: 'ONLINE' },
+                { name: 'Actuator_L', status: 'ONLINE' },
+                { name: 'Actuator_R', status: 'ONLINE' },
+                { name: 'Gloves_Therapy', status: 'ONLINE' }
+            ];
+
+            for (const sensor of sensors) {
+                try {
+                    await fetch('/api/admin/sensors/heartbeat', {
+                        method: 'POST',
+                        headers: { 
+                            'Content-Type': 'application/json',
+                            'Authorization': `Bearer ${token}`
+                        },
+                        body: JSON.stringify({ sensor_type: sensor.name, status: sensor.status })
+                    });
+                    logToTerminal(`[TEST] ✓ ${sensor.name} - OK`);
+                    addTestHistory(`✓ ${sensor.name}`);
+                } catch (e) {
+                    logToTerminal(`[TEST] ✗ ${sensor.name} - FAILED`);
+                }
+                await new Promise(resolve => setTimeout(resolve, 300));
+            }
+
+            logToTerminal(`[TEST] ✓ All sensor tests completed`);
+            addTestHistory('✓ Full test completed');
+            fetchSensors();
+        }
+
+        async function simulateOfflineSensor() {
+            logToTerminal(`[TEST] Simulating offline sensor...`);
+            
+            await fetch('/api/admin/sensors/heartbeat', {
+                method: 'POST',
+                headers: { 
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}`
+                },
+                body: JSON.stringify({ sensor_type: 'TEST_OFFLINE', status: 'OFFLINE' })
+            });
+            
+            addTestHistory('Offline sensor simulation');
+            logToTerminal(`[TEST] ✓ Offline sensor test sent`);
+            fetchSensors();
+        }
+
+        let testHistoryList = [];
+        function addTestHistory(message) {
+            const timestamp = new Date().toLocaleTimeString();
+            testHistoryList.unshift({ time: timestamp, msg: message });
+            if (testHistoryList.length > 20) testHistoryList.pop();
+            
+            const historyDiv = document.getElementById('testHistory');
+            historyDiv.innerHTML = '';
+            testHistoryList.forEach(item => {
+                const entry = document.createElement('div');
+                entry.style.cssText = 'padding: 8px; border-bottom: 1px solid #eee; font-size: 12px;';
+                entry.innerHTML = `<span style="color: #888;">[${item.time}]</span> ${item.msg}`;
+                historyDiv.appendChild(entry);
+            });
+        }
+
+        function clearTestHistory() {
+            testHistoryList = [];
+            const historyDiv = document.getElementById('testHistory');
+            historyDiv.innerHTML = '<p class="text-muted">History cleared</p>';
+        }
+
+        function toggleSidebar() {
+            const sidebar = document.getElementById('sidebar');
+            const mainContent = document.getElementById('mainContent');
+            const navbar = document.getElementById('navbar');
+            
+            sidebar.classList.toggle('collapsed');
+            mainContent.classList.toggle('expanded');
+            navbar.classList.toggle('expanded');
+            
+            const isCollapsed = sidebar.classList.contains('collapsed');
+            localStorage.setItem('sidebarCollapsed', isCollapsed);
+        }
+
+        // ========== THERAPY SESSION FUNCTIONS ==========
+        let sessionPollingInterval = null;
+
+        async function startTherapySession() {
+            const intensity = document.getElementById('sessionIntensity').value;
+            const durationMins = document.getElementById('sessionDuration').value;
+
+            logToTerminal(`[SESSION] Initiating ${intensity} session for ${durationMins}m...`);
+            
+            try {
+                const res = await fetch('/api/sessions/start', {
+                    method: 'POST',
+                    headers: { 
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`
+                    },
+                    body: JSON.stringify({ userId: user.id, intensity, durationMins })
+                });
+                const data = await res.json();
+                if (data.success) {
+                    logToTerminal(`[SESSION] ✓ Session ID ${data.session_id} started`);
+                    document.getElementById('idleSessionPanel').style.display = 'none';
+                    document.getElementById('activeSessionPanel').style.display = 'block';
+                    startSessionPolling();
+                } else {
+                    logToTerminal(`[ERROR] Failed to start session: ${data.error}`);
+                }
+            } catch (e) {
+                logToTerminal(`[ERROR] ${e.message}`);
+            }
+        }
+
+        function startSessionPolling() {
+            if (sessionPollingInterval) clearInterval(sessionPollingInterval);
+            sessionPollingInterval = setInterval(refreshActiveSession, 2000);
+            refreshActiveSession();
+        }
+
+        async function refreshActiveSession() {
+            try {
+                const res = await fetch(`/api/sessions/current/${user.id}`, {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                const data = await res.json();
+                
+                if (data.status === 'NONE') {
+                    if (sessionPollingInterval) clearInterval(sessionPollingInterval);
+                    document.getElementById('activeSessionPanel').style.display = 'none';
+                    document.getElementById('idleSessionPanel').style.display = 'block';
+                    return;
+                }
+
+                // Update UI
+                updateSessionUI(data);
+
+                if (data.status === 'COMPLETED') {
+                    logToTerminal(`[SESSION] ✓ Session ${data.session_id} completed successfully`);
+                    clearInterval(sessionPollingInterval);
+                    fetchSessionHistory();
+                }
+            } catch (e) {
+                console.error('Session polling error:', e);
+            }
+        }
+
+        function updateSessionUI(data) {
+            const badge = document.getElementById('sessionTimerBadge');
+            const timerText = document.getElementById('sessionTimerText');
+            const progress = document.getElementById('timerProgress');
+            
+            // Badge & Status
+            badge.textContent = data.status === 'INITIAL' ? 'Warming Up...' : 
+                               data.status === 'RUNNING' ? 'In Progress' : 'Completed';
+            badge.className = `session-status-badge status-${data.status.toLowerCase()}`;
+
+            // Countdown Logic
+            const remainingSecs = Math.max(0, data.total_seconds - data.elapsed_seconds);
+            const m = Math.floor(remainingSecs / 60);
+            const s = Math.floor(remainingSecs % 60);
+            timerText.textContent = `${m}:${s < 10 ? '0'+s : s}`;
+
+            // Progress Ring
+            const percent = (data.elapsed_seconds / data.total_seconds) * 360;
+            progress.style.transform = `rotate(${-90 + percent}deg)`;
+
+            // Averages
+            document.getElementById('sessionAvgHR').textContent = data.averages.avg_hr || '--';
+            document.getElementById('sessionAvgSpO2').textContent = data.averages.avg_spo2 || '--';
+            document.getElementById('sessionAvgTemp').textContent = data.averages.avg_temp || '--';
+        }
+
+        async function fetchSessionHistory() {
+            try {
+                const res = await fetch('/api/sessions/history', {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                const data = await res.json();
+                const tbody = document.getElementById('sessionHistoryBody');
+                if (!tbody) return;
+
+                tbody.innerHTML = '';
+                data.forEach(s => {
+                    const tr = document.createElement('tr');
+                    tr.innerHTML = `
+                        <td>${new Date(s.created_at).toLocaleString()}</td>
+                        <td>${s.intensity}</td>
+                        <td>${s.duration_mins} min</td>
+                        <td class="text-center"><span class="badge ${s.status === 'COMPLETED' ? 'badge-success' : 'badge-info'}" style="font-size: 10px; padding: 4px 8px;">${s.status}</span></td>
+                        <td style="font-size: 11px; color: #888;">Record Finalized</td>
+                    `;
+                    tbody.appendChild(tr);
+                });
+            } catch (e) {}
+        }
+
+        // Initial load
+        document.addEventListener('DOMContentLoaded', () => {
+            if (localStorage.getItem('sidebarCollapsed') === 'true') {
+                toggleSidebar();
+            }
+            logToTerminal('[SYSTEM] UI Initialized');
+            
+            // Following HARDWARE_INTEGRATION_GUIDE Step 2
+            setInterval(fetchSensors, 2500);
+            setInterval(fetchVitalsHistory, 5000);
+            fetchSessionHistory();
+            refreshActiveSession();
+        });
+
+        logToTerminal('[SYSTEM] Vitals Monitor initialized');
+        logToTerminal('[AUTH] User: ' + user.username + ' (' + user.role + ')');
+        fetchSensors();
+        fetchVitalsHistory();
+    </script>
+</body>
+</html>

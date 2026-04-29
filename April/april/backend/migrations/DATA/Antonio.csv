@@ -1,0 +1,31 @@
+Date,Patient_Name,Age_Range,Gender,Stroke_Duration,Session_Type,Avg_Heart_Rate,Avg_Temp_C,Avg_SpO2,Hand_Level,Foot_Level,HII_Recovery_Index,Weekly_Improvement_Pct,Clinical_Status
+3/30/2026,Antonio,61-70 yrs,Male,Long-term(2y+),Initial Assessment,83,36.7,95%,1,0,3.4,0.00%,Baseline Established
+3/31/2026,Antonio,61-70 yrs,Male,Long-term(2y+),Daily Therapy,86,36.9,95%,1,0,3.4,7.39%,Stable
+4/1/2026,Antonio,61-70 yrs,Male,Long-term(2y+),Daily Therapy,85,36.9,96%,1,0,3.4,10.18%,Stable
+4/2/2026,Antonio,61-70 yrs,Male,Long-term(2y+),Daily Therapy,79,36.6,95%,1,0,3.5,4.16%,Stable
+4/3/2026,Antonio,61-70 yrs,Male,Long-term(2y+),Daily Therapy,84,36.5,96%,1,0,3.6,3.85%,Stable
+4/4/2026,Antonio,61-70 yrs,Male,Long-term(2y+),Daily Therapy,84,36.9,96%,1,0,3.7,11.90%,Stable
+4/5/2026,Antonio,61-70 yrs,Male,Long-term(2y+),Weekly Review,85,37,96%,1,0,3.7,4.17%,Stable
+4/6/2026,Antonio,61-70 yrs,Male,Long-term(2y+),Daily Therapy,79,37,95%,1,0,3.8,3.15%,Stable
+4/7/2026,Antonio,61-70 yrs,Male,Long-term(2y+),Daily Therapy,83,36.8,94%,1,0,3.9,6.98%,Stable
+4/8/2026,Antonio,61-70 yrs,Male,Long-term(2y+),Daily Therapy,84,36.7,95%,1,1,3.9,10.15%,Stable
+4/9/2026,Antonio,61-70 yrs,Male,Long-term(2y+),Daily Therapy,80,37,96%,1,1,3.9,3.40%,Stable
+4/10/2026,Antonio,61-70 yrs,Male,Long-term(2y+),Daily Therapy,81,36.6,95%,1,1,4,8.20%,Stable
+4/11/2026,Antonio,61-70 yrs,Male,Long-term(2y+),Daily Therapy,80,36.9,94%,2,2,4.1,2.44%,Stable
+4/12/2026,Antonio,61-70 yrs,Male,Long-term(2y+),Weekly Review,84,36.5,96%,2,3,4.2,11.99%,Stable
+4/13/2026,Antonio,61-70 yrs,Male,Long-term(2y+),Daily Therapy,80,36.7,95%,2,3,4.3,4.80%,Stable
+4/14/2026,Antonio,61-70 yrs,Male,Long-term(2y+),Daily Therapy,83,37,96%,3,3,4.4,10.91%,Stable
+4/15/2026,Antonio,61-70 yrs,Male,Long-term(2y+),Daily Therapy,85,36.6,94%,3,4,4.5,9.41%,Improving
+4/16/2026,Antonio,61-70 yrs,Male,Long-term(2y+),Daily Therapy,86,36.8,95%,3,4,4.7,9.09%,Improving
+4/17/2026,Antonio,61-70 yrs,Male,Long-term(2y+),Daily Therapy,87,36.7,96%,3,4,4.7,5.93%,Improving
+4/18/2026,Antonio,61-70 yrs,Male,Long-term(2y+),Daily Therapy,82,36.5,94%,3,4,4.8,11.25%,Improving
+4/19/2026,Antonio,61-70 yrs,Male,Long-term(2y+),Weekly Review,80,36.8,94%,3,4,4.9,6.61%,Improving
+4/20/2026,Antonio,61-70 yrs,Male,Long-term(2y+),Daily Therapy,86,36.6,95%,3,4,5.1,2.25%,Improving
+4/21/2026,Antonio,61-70 yrs,Male,Long-term(2y+),Daily Therapy,80,36.8,94%,3,4,5.2,7.02%,Improving
+4/22/2026,Antonio,61-70 yrs,Male,Long-term(2y+),Daily Therapy,87,36.7,94%,3,4,5.3,3.55%,Improving
+4/23/2026,Antonio,61-70 yrs,Male,Long-term(2y+),Daily Therapy,80,36.5,95%,4,4,5.3,6.42%,Improving
+4/24/2026,Antonio,61-70 yrs,Male,Long-term(2y+),Daily Therapy,87,36.8,94%,4,4,5.4,8.09%,Improving
+4/25/2026,Antonio,61-70 yrs,Male,Long-term(2y+),Daily Therapy,86,36.9,95%,4,4,5.5,6.96%,Improving
+4/26/2026,Antonio,61-70 yrs,Male,Long-term(2y+),Weekly Review,87,36.7,96%,5,4,5.5,2.25%,Improving
+4/27/2026,Antonio,61-70 yrs,Male,Long-term(2y+),Daily Therapy,80,36.6,96%,5,4,5.6,6.30%,Improving
+4/28/2026,Antonio,61-70 yrs,Male,Long-term(2y+),Daily Therapy,87,36.8,96%,5,4,5.7,2.57%,Improving

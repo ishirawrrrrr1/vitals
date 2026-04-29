@@ -1,0 +1,445 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="theme-color" content="#0ea5e9">
+    <title>Management - Clinical Vitals</title>
+    <link rel="manifest" href="/manifest.webmanifest">
+    <link rel="icon" href="/icon.svg" type="image/svg+xml">
+    <link rel="apple-touch-icon" href="/icon.svg">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="/dashboard.css">
+    <script src="/pwa.js" defer></script>
+    <style>
+        .management-container {
+            padding: 24px;
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+        
+        .tabs {
+            display: flex;
+            gap: 16px;
+            margin-bottom: 32px;
+            border-bottom: 1px solid var(--surface-light);
+            padding-bottom: 12px;
+        }
+        
+        .tab {
+            padding: 12px 24px;
+            border-radius: 12px;
+            cursor: pointer;
+            font-weight: 700;
+            color: var(--text-muted);
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .tab.active {
+            background: var(--primary);
+            color: white;
+            box-shadow: 0 4px 12px rgba(56, 189, 248, 0.3);
+        }
+        
+        .tab:hover:not(.active) {
+            background: var(--surface);
+            color: var(--text);
+        }
+        
+        .management-card {
+            background: var(--glass);
+            backdrop-filter: var(--blur);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            border-radius: var(--radius);
+            padding: 32px;
+            margin-bottom: 24px;
+        }
+        
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 24px;
+        }
+        
+        th {
+            text-align: left;
+            padding: 16px;
+            color: var(--text-muted);
+            font-size: 12px;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            border-bottom: 1px solid var(--surface-light);
+        }
+        
+        td {
+            padding: 16px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+            font-size: 14px;
+        }
+        
+        .role-badge {
+            padding: 4px 12px;
+            border-radius: 50px;
+            font-size: 11px;
+            font-weight: 700;
+            text-transform: uppercase;
+        }
+        
+        .role-admin { background: rgba(56, 189, 248, 0.1); color: var(--primary); }
+        .role-tech { background: rgba(34, 197, 94, 0.1); color: var(--success); }
+        
+        .action-btn {
+            background: none;
+            border: none;
+            color: var(--text-muted);
+            cursor: pointer;
+            transition: color 0.2s;
+            margin-right: 12px;
+        }
+        
+        .action-btn:hover { color: var(--primary); }
+        .action-btn.delete:hover { color: var(--danger); }
+        
+        .form-group {
+            margin-bottom: 20px;
+        }
+        
+        label {
+            display: block;
+            font-size: 12px;
+            font-weight: 700;
+            color: var(--text-muted);
+            margin-bottom: 8px;
+            text-transform: uppercase;
+        }
+        
+        input, select {
+            width: 100%;
+            padding: 12px 16px;
+            background: var(--surface);
+            border: 1px solid var(--surface-light);
+            border-radius: 12px;
+            color: var(--text);
+            outline: none;
+        }
+        
+        input:focus { border-color: var(--primary); }
+        
+        .btn-action {
+            padding: 12px 24px;
+            background: var(--primary);
+            border: none;
+            border-radius: 12px;
+            color: white;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        
+        .btn-action:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(56, 189, 248, 0.4);
+        }
+
+        .back-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            color: var(--primary);
+            text-decoration: none;
+            font-weight: 600;
+            margin-bottom: 24px;
+            transition: transform 0.2s;
+        }
+
+        .back-link:hover {
+            transform: translateX(-4px);
+        }
+
+        #data-section { display: none; }
+    </style>
+</head>
+<body>
+    <div class="management-container">
+        <header>
+            <div class="brand">
+                <i class="fas fa-shield-alt"></i>
+                <h1>SYSTEM MANAGEMENT</h1>
+            </div>
+            <a href="/dashboard.html" class="back-link">
+                <i class="fas fa-arrow-left"></i> Back to Dashboard
+            </a>
+        </header>
+
+        <div class="tabs">
+            <div class="tab active" onclick="showSection('accounts')">
+                <i class="fas fa-users-cog"></i>
+                Accounts
+            </div>
+            <div class="tab" onclick="showSection('data')">
+                <i class="fas fa-database"></i>
+                Clinical Data
+            </div>
+            <div class="tab" onclick="showSection('hardware')">
+                <i class="fas fa-microchip"></i>
+                Hardware
+            </div>
+        </div>
+
+        <!-- ACCOUNTS SECTION -->
+        <div id="accounts-section">
+            <div class="vitals-grid" style="grid-template-columns: 1fr 2fr;">
+                <!-- Add User Form -->
+                <div class="management-card">
+                    <h2 class="panel-title"><i class="fas fa-user-plus"></i> Create New Account</h2>
+                    <form id="addUserForm">
+                        <div class="form-group">
+                            <label>Username</label>
+                            <input type="text" id="username" placeholder="e.g. jsmith" required>
+                        </div>
+                        <div class="form-group">
+                            <label>Email Address</label>
+                            <input type="email" id="email" placeholder="e.g. john@vitals.com" required>
+                        </div>
+                        <div class="form-group">
+                            <label>Password</label>
+                            <input type="password" id="password" required>
+                        </div>
+                        <div class="form-group">
+                            <label>System Role</label>
+                            <select id="role">
+                                <option value="technician">Technician</option>
+                                <option value="admin">Administrator</option>
+                            </select>
+                        </div>
+                        <button type="submit" class="btn-action">Create Account</button>
+                    </form>
+                </div>
+
+                <!-- User List -->
+                <div class="management-card" style="overflow-x: auto;">
+                    <h2 class="panel-title"><i class="fas fa-list"></i> Registered Staff</h2>
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>User</th>
+                                <th>Role</th>
+                                <th>Created</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="userList">
+                            <!-- Injected by JS -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- DATA SECTION -->
+        <div id="data-section">
+            <div class="management-card">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px;">
+                    <h2 class="panel-title" style="margin-bottom: 0;"><i class="fas fa-history"></i> Clinical Reading Logs</h2>
+                    <div style="display: flex; gap: 12px;">
+                        <button class="btn-action" style="background: var(--surface-light);" onclick="exportData()">
+                            <i class="fas fa-download"></i> Export CSV
+                        </button>
+                        <button class="btn-action" style="background: var(--danger);" onclick="clearLogs()">
+                            <i class="fas fa-trash"></i> Clear All Logs
+                        </button>
+                    </div>
+                </div>
+                <div style="overflow-x: auto;">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Timestamp</th>
+                                <th>Sensor</th>
+                                <th>Metric</th>
+                                <th>Value</th>
+                                <th>Status</th>
+                            </tr>
+                        </thead>
+                        <tbody id="vitalsLogs">
+                            <!-- Injected by JS -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+        <!-- HARDWARE SECTION -->
+        <div id="hardware-section" style="display: none;">
+            <div class="management-card">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px;">
+                    <h2 class="panel-title" style="margin-bottom: 0;"><i class="fas fa-microchip"></i> Sensor Registry & Calibration</h2>
+                    <button class="btn-action" onclick="alert('Scan for new I2C devices...')">
+                        <i class="fas fa-search"></i> Scan Hardware
+                    </button>
+                </div>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Device Name</th>
+                            <th>Connection</th>
+                            <th>Calibration Offset</th>
+                            <th>Health</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="hardwareList">
+                        <tr>
+                            <td><span style="font-weight: 700;">MAX30105 Pulse Ox</span></td>
+                            <td>I2C (0x57)</td>
+                            <td>+0.00</td>
+                            <td><span style="color: var(--success)">OPTIMAL</span></td>
+                            <td><button class="action-btn"><i class="fas fa-cog"></i></button></td>
+                        </tr>
+                        <tr>
+                            <td><span style="font-weight: 700;">ESP32 Core V6</span></td>
+                            <td>Internal</td>
+                            <td>N/A</td>
+                            <td><span style="color: var(--success)">ACTIVE</span></td>
+                            <td><button class="action-btn"><i class="fas fa-cog"></i></button></td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+    <script>
+        const token = localStorage.getItem('token');
+        if (!token) window.location.href = 'login.html';
+
+        async function fetchUsers() {
+            try {
+                const res = await fetch('/api/admin/users', {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                const users = await res.json();
+                const container = document.getElementById('userList');
+                container.innerHTML = users.map(u => `
+                    <tr>
+                        <td>
+                            <div style="display: flex; flex-direction: column;">
+                                <span style="font-weight: 700;">${u.username}</span>
+                                <span style="font-size: 11px; color: var(--text-muted);">${u.email}</span>
+                            </div>
+                        </td>
+                        <td>
+                            <span class="role-badge role-${u.role === 'admin' ? 'admin' : 'tech'}">
+                                ${u.role}
+                            </span>
+                        </td>
+                        <td style="color: var(--text-muted); font-size: 12px;">${new Date(u.created_at).toLocaleDateString()}</td>
+                        <td>
+                            <button class="action-btn" onclick="editUser(${u.id})"><i class="fas fa-edit"></i></button>
+                            <button class="action-btn delete" onclick="deleteUser(${u.id})"><i class="fas fa-trash-alt"></i></button>
+                        </td>
+                    </tr>
+                `).join('');
+            } catch (e) { console.error(e); }
+        }
+
+        async function fetchVitals() {
+            try {
+                const res = await fetch('/api/admin/sensors', {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                const sensors = await res.json();
+                const container = document.getElementById('vitalsLogs');
+                container.innerHTML = sensors.map(s => `
+                    <tr>
+                        <td style="color: var(--text-muted);">${new Date(s.last_seen || Date.now()).toLocaleString()}</td>
+                        <td><span style="font-weight: 700;">${s.sensor_type}</span></td>
+                        <td>${s.pin_assignment || 'AUTO'}</td>
+                        <td><span style="color: var(--primary); font-weight: 800;">${s.status === 'ONLINE' ? 'LIVE' : '--'}</span></td>
+                        <td>
+                            <div style="display: flex; align-items: center; gap: 6px;">
+                                <div class="status-dot ${s.status === 'ONLINE' ? 'online' : ''}"></div>
+                                <span style="font-size: 11px; font-weight: 700;">${s.status}</span>
+                            </div>
+                        </td>
+                    </tr>
+                `).join('');
+            } catch (e) { console.error(e); }
+        }
+
+        document.getElementById('addUserForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const data = {
+                username: document.getElementById('username').value,
+                email: document.getElementById('email').value,
+                password: document.getElementById('password').value,
+                role: document.getElementById('role').value
+            };
+            
+            try {
+                const res = await fetch('/api/admin/users', {
+                    method: 'POST',
+                    headers: { 
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}` 
+                    },
+                    body: JSON.stringify(data)
+                });
+                if (res.ok) {
+                    alert('User created successfully');
+                    document.getElementById('addUserForm').reset();
+                    fetchUsers();
+                } else {
+                    const err = await res.json();
+                    alert('Error: ' + err.message);
+                }
+            } catch (e) { alert('Failed to create user'); }
+        });
+
+        async function deleteUser(id) {
+            if (!confirm('Are you sure you want to delete this account?')) return;
+            try {
+                const res = await fetch(`/api/admin/users/${id}`, {
+                    method: 'DELETE',
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                if (res.ok) fetchUsers();
+            } catch (e) { alert('Failed to delete user'); }
+        }
+
+        function showSection(id) {
+            document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+            event.currentTarget.classList.add('active');
+            
+            // Hide all sections
+            document.getElementById('accounts-section').style.display = 'none';
+            document.getElementById('data-section').style.display = 'none';
+            document.getElementById('hardware-section').style.display = 'none';
+            
+            // Show target
+            document.getElementById(id + '-section').style.display = 'block';
+            
+            if (id === 'accounts') fetchUsers();
+            else if (id === 'data') fetchVitals();
+            else if (id === 'hardware') console.log('Hardware section ready');
+        }
+
+        function exportData() {
+            alert('Preparing high-fidelity export for patient records...');
+        }
+
+        function clearLogs() {
+            if (confirm('DANGER: This will permanently wipe all clinical history. Continue?')) {
+                alert('Logs cleared successfully (Simulated)');
+            }
+        }
+
+        window.onload = fetchUsers;
+    </script>
+</body>
+</html>

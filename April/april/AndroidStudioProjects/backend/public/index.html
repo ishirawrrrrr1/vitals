@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Vitality Admin - Hardware Control Center</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body { background-color: #f8f9fa; }
+        .card { margin-bottom: 20px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
+        .status-badge { font-size: 0.9em; }
+        #terminal { background-color: #1e1e1e; color: #00ff00; height: 350px; overflow-y: scroll; padding: 10px; font-family: 'Courier New', Courier, monospace; border-radius: 5px; }
+    </style>
+    <script src="/socket.io/socket.io.js"></script>
+</head>
+<body>
+    <nav class="navbar navbar-dark bg-dark">
+        <div class="container-fluid">
+            <span class="navbar-brand mb-0 h1">Vitality Hardware Admin</span>
+        </div>
+    </nav>
+
+    <div class="container mt-4">
+        <div class="row">
+            <!-- Sensor Monitoring -->
+            <div class="col-md-8">
+                <div class="card">
+                    <div class="card-header bg-primary text-white">Live Sensor Terminal</div>
+                    <div class="card-body">
+                        <div id="terminal">Initializing terminal...</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Smart Offset Calibration -->
+            <div class="col-md-4">
+                <div class="card">
+                    <div class="card-header bg-success text-white">Smart Offset Calibration</div>
+                    <div class="card-body">
+                        <form id="calibrationForm">
+                            <div class="mb-3">
+                                <label class="form-label">Temp Offset (°C)</label>
+                                <input type="number" step="0.1" class="form-control" id="temp_offset" value="0.0">
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">BPM Offset</label>
+                                <input type="number" class="form-control" id="bpm_offset" value="0">
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">SpO2 Offset (%)</label>
+                                <input type="number" class="form-control" id="spo2_offset" value="0">
+                            </div>
+                            <button type="submit" class="btn btn-success w-100">Apply Over-The-Air</button>
+                        </form>
+                        <div id="saveStatus" class="mt-2 text-center"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const terminal = document.getElementById('terminal');
+        const calForm = document.getElementById('calibrationForm');
+
+        function logToTerminal(msg) {
+            const time = new Date().toLocaleTimeString();
+            terminal.innerHTML += `<div>[${time}] ${msg}</div>`;
+            terminal.scrollTop = terminal.scrollHeight;
+            console.log(`[ADMIN_GUI] ${msg}`); // Also log to browser console
+        }
+
+        // Fetch current config
+        async function fetchConfig() {
+            logToTerminal("Attempting to fetch current system config...");
+            try {
+                const res = await fetch('/api/admin/config');
+                const data = await res.json();
+                document.getElementById('temp_offset').value = data.temp_offset;
+                document.getElementById('bpm_offset').value = data.bpm_offset;
+                document.getElementById('spo2_offset').value = data.spo2_offset;
+                logToTerminal(`[FIXER] Success: Current Offsets - T:${data.temp_offset}, B:${data.bpm_offset}, S:${data.spo2_offset}`);
+            } catch (e) {
+                logToTerminal(`[FIXER] Error: ${e.message}`);
+            }
+        }
+
+        // Real-time Feed using Socket.io
+        const socket = io();
+        socket.on('connect', () => {
+            logToTerminal("Connected to Real-time Backend");
+            socket.emit('join_dashboard', {});
+        });
+
+        socket.on('vitals_update', (data) => {
+            // data format: { raw: "DATA:MAX30102:75" } or generic JSON
+            if (data.raw) {
+                logToTerminal(`[LIVE_HUB] ${data.raw}`);
+            } else {
+                logToTerminal(`[LIVE_JSON] HR=${data.heart_rate} | T=${data.temperature} | S=${data.spo2}%`);
+            }
+        });
+
+        socket.on('disconnect', () => {
+            logToTerminal("Disconnected from Backend");
+        });
+
+        calForm.onsubmit = async (e) => {
+            e.preventDefault();
+            const body = {
+                temp_offset: parseFloat(document.getElementById('temp_offset').value),
+                bpm_offset: parseInt(document.getElementById('bpm_offset').value),
+                spo2_offset: parseInt(document.getElementById('spo2_offset').value)
+            };
+            
+            try {
+                const res = await fetch('/api/admin/config', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(body)
+                });
+                const data = await res.json();
+                if (data.success) {
+                    document.getElementById('saveStatus').innerText = "Offsets applied successfully!";
+                    logToTerminal("OTA config updated: " + JSON.stringify(body));
+                }
+            } catch (e) {
+                logToTerminal("Error saving config: " + e.message);
+            }
+        };
+
+        fetchConfig();
+    </script>
+</body>
+</html>

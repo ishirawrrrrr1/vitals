@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="theme-color" content="#0ea5e9">
+    <title>Clinical Vitals Dashboard</title>
+    <link rel="manifest" href="/manifest.webmanifest">
+    <link rel="icon" href="/icon.svg" type="image/svg+xml">
+    <link rel="apple-touch-icon" href="/icon.svg">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="dashboard.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="/socket.io/socket.io.js"></script>
+    <script src="/pwa.js" defer></script>
+</head>
+<body>
+    <div class="dashboard-container">
+        <header>
+            <div class="brand">
+                <i class="fas fa-heartbeat pulse-icon"></i>
+                <h1>CLINICAL MONITOR <span id="session-tag" style="font-size: 10px; background: var(--primary-dark); padding: 2px 8px; border-radius: 10px; margin-left: 10px; display: none;">SESSION ACTIVE</span></h1>
+            </div>
+            <div class="status-indicator">
+                <div id="status-dot" class="status-dot"></div>
+                <span id="status-text">HUB DISCONNECTED</span>
+            </div>
+        </header>
+
+        <div class="vitals-grid">
+            <!-- CARDIAC WAVEFORM -->
+            <div class="vitals-card waveform-container">
+                <span class="card-label">Cardiac Real-Time Waveform</span>
+                <canvas id="waveformChart"></canvas>
+            </div>
+
+            <!-- HEART RATE -->
+            <div class="vitals-card">
+                <span class="card-label">Heart Rate</span>
+                <div class="card-value-group">
+                    <span id="hr-val" class="card-value">--</span>
+                    <span class="card-unit">BPM</span>
+                </div>
+                <div class="card-status" style="color: var(--success)">
+                    <i class="fas fa-check-circle"></i> STABLE
+                </div>
+            </div>
+
+            <!-- SPO2 -->
+            <div class="vitals-card">
+                <span class="card-label">Oxygen (SpO2)</span>
+                <div class="card-value-group">
+                    <span id="spo2-val" class="card-value">--</span>
+                    <span class="card-unit">%</span>
+                </div>
+                <div class="card-status" style="color: var(--primary)">
+                    <i class="fas fa-info-circle"></i> OPTIMAL
+                </div>
+            </div>
+
+            <!-- TEMPERATURE -->
+            <div class="vitals-card">
+                <span class="card-label">Body Temp</span>
+                <div class="card-value-group">
+                    <span id="temp-val" class="card-value">--</span>
+                    <span class="card-unit">°C</span>
+                </div>
+                <div class="card-status" style="color: var(--warning)">
+                    <i class="fas fa-thermometer-half"></i> NORMAL
+                </div>
+            </div>
+
+            <!-- BLOOD PRESSURE -->
+            <div class="vitals-card">
+                <span class="card-label">Blood Pressure</span>
+                <div class="card-value-group">
+                    <span id="bp-val" class="card-value">120/80</span>
+                    <span class="card-unit">mmHg</span>
+                </div>
+                <div class="card-status" style="color: var(--text-muted)">
+                    ESTIMATED
+                </div>
+            </div>
+        </div>
+
+        <div class="controls-panel">
+            <h2 class="panel-title"><i class="fas fa-sliders-h"></i> Hardware Actuators</h2>
+            <div class="control-group">
+                <button class="btn-control" onclick="sendCommand('CMD:HAND:EXT')">
+                    <i class="fas fa-chevron-up"></i>
+                    <span>Arm Ext</span>
+                </button>
+                <button class="btn-control" onclick="sendCommand('CMD:HAND:RET')">
+                    <i class="fas fa-chevron-down"></i>
+                    <span>Arm Ret</span>
+                </button>
+                <button class="btn-control" onclick="sendCommand('CMD:LEG:EXT')">
+                    <i class="fas fa-chevron-up"></i>
+                    <span>Leg Ext</span>
+                </button>
+                <button class="btn-control" onclick="sendCommand('CMD:LEG:RET')">
+                    <i class="fas fa-chevron-down"></i>
+                    <span>Leg Ret</span>
+                </button>
+                <button class="btn-control" id="btn-glove" onclick="toggleGlove()">
+                    <i class="fas fa-hand-paper"></i>
+                    <span>Glove Power</span>
+                </button>
+                <button class="btn-control" style="background: var(--danger); color: white;" onclick="sendCommand('CMD:STOP')">
+                    <i class="fas fa-stop"></i>
+                    <span>Emergency Stop</span>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const socket = io();
+        let gloveActive = false;
+        let chart;
+        let waveformData = [];
+        const MAX_WAVEFORM_POINTS = 50;
+
+        // Initialize Chart
+        function initChart() {
+            const ctx = document.getElementById('waveformChart').getContext('2d');
+            chart = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: Array(MAX_WAVEFORM_POINTS).fill(''),
+                    datasets: [{
+                        label: 'IR Pulse',
+                        data: Array(MAX_WAVEFORM_POINTS).fill(0),
+                        borderColor: '#38BDF8',
+                        borderWidth: 3,
+                        tension: 0.4,
+                        pointRadius: 0,
+                        fill: true,
+                        backgroundColor: 'rgba(56, 189, 248, 0.1)'
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    animation: false,
+                    scales: {
+                        y: { display: false, min: -2, max: 10 },
+                        x: { display: false }
+                    },
+                    plugins: { legend: { display: false } }
+                }
+            });
+        }
+
+        // Simulate Cardiac Waveform based on BPM
+        let wavePhase = 0;
+        function updateWaveform(bpm) {
+            if (!bpm) bpm = 75;
+            const frequency = bpm / 60; // beats per second
+            const step = (Math.PI * 2 * frequency) / 10; // Adjust for 10fps
+            
+            // Generate EKG-like pulse
+            let val = Math.sin(wavePhase);
+            if (val > 0.8) val *= 5; // P-wave peak
+            else if (val < -0.8) val *= 2; // S-wave dip
+            else val *= 0.2; // Baseline noise
+            
+            wavePhase += step;
+            
+            chart.data.datasets[0].data.shift();
+            chart.data.datasets[0].data.push(val + (Math.random() * 0.1));
+            chart.update();
+        }
+
+        socket.on('connect', () => {
+            document.getElementById('status-dot').className = 'status-dot online';
+            document.getElementById('status-text').innerText = 'LINKED TO BACKEND';
+        });
+
+        socket.on('disconnect', () => {
+            document.getElementById('status-dot').className = 'status-dot';
+            document.getElementById('status-text').innerText = 'OFFLINE';
+        });
+
+        socket.on('vitals_update', (data) => {
+            if (data.heart_rate) {
+                document.getElementById('hr-val').innerText = data.heart_rate;
+                document.getElementById('session-tag').style.display = 'inline';
+            }
+            if (data.spo2) document.getElementById('spo2-val').innerText = data.spo2;
+            if (data.body_temp) document.getElementById('temp-val').innerText = data.body_temp;
+        });
+
+        socket.on('hub_status', (data) => {
+            if (data.connected) {
+                document.getElementById('status-text').innerText = 'HUB CONNECTED';
+            } else {
+                document.getElementById('status-text').innerText = 'HUB DISCONNECTED';
+            }
+        });
+
+        function sendCommand(cmd) {
+            socket.emit('app_command', { command: cmd });
+        }
+
+        function toggleGlove() {
+            gloveActive = !gloveActive;
+            const cmd = gloveActive ? 'GLOVE:ON' : 'GLOVE:OFF';
+            sendCommand(cmd);
+            document.getElementById('btn-glove').classList.toggle('active', gloveActive);
+        }
+
+        // Start waveform simulation
+        setInterval(() => {
+            const bpm = parseInt(document.getElementById('hr-val').innerText) || 75;
+            updateWaveform(bpm);
+        }, 100);
+
+        window.onload = initChart;
+    </script>
+</body>
+</html>

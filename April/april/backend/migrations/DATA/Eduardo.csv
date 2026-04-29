@@ -1,0 +1,31 @@
+Date,Patient_Name,Age_Range,Gender,Stroke_Duration,Session_Type,Avg_Heart_Rate,Avg_Temp_C,Avg_SpO2,Hand_Level,Foot_Level,HII_Recovery_Index,Weekly_Improvement_Pct,Clinical_Status
+3/30/2026,Eduardo,51-60 yrs,Male,Long-term(2y+),Initial Assessment,82,36.4,95%,0,1,3.4,0.00%,Baseline Established
+3/31/2026,Eduardo,51-60 yrs,Male,Long-term(2y+),Daily Therapy,86,36.2,94%,0,1,3.5,8.52%,Stable
+4/1/2026,Eduardo,51-60 yrs,Male,Long-term(2y+),Daily Therapy,85,36.5,96%,0,1,3.6,11.71%,Stable
+4/2/2026,Eduardo,51-60 yrs,Male,Long-term(2y+),Daily Therapy,83,36.3,95%,1,2,3.6,8.38%,Stable
+4/3/2026,Eduardo,51-60 yrs,Male,Long-term(2y+),Daily Therapy,79,36.3,95%,1,3,3.7,6.17%,Stable
+4/4/2026,Eduardo,51-60 yrs,Male,Long-term(2y+),Daily Therapy,78,36.3,96%,1,3,3.9,4.45%,Stable
+4/5/2026,Eduardo,51-60 yrs,Male,Long-term(2y+),Weekly Review,81,36.2,95%,1,3,4,8.17%,Stable
+4/6/2026,Eduardo,51-60 yrs,Male,Long-term(2y+),Daily Therapy,86,36.6,94%,1,3,4.1,8.81%,Stable
+4/7/2026,Eduardo,51-60 yrs,Male,Long-term(2y+),Daily Therapy,86,36.3,94%,1,3,4.2,3.99%,Stable
+4/8/2026,Eduardo,51-60 yrs,Male,Long-term(2y+),Daily Therapy,80,36.1,95%,1,3,4.3,5.67%,Stable
+4/9/2026,Eduardo,51-60 yrs,Male,Long-term(2y+),Daily Therapy,78,36.6,96%,1,3,4.4,4.13%,Stable
+4/10/2026,Eduardo,51-60 yrs,Male,Long-term(2y+),Daily Therapy,83,36.2,95%,1,3,4.4,11.81%,Stable
+4/11/2026,Eduardo,51-60 yrs,Male,Long-term(2y+),Daily Therapy,82,36.6,95%,1,3,4.5,6.72%,Improving
+4/12/2026,Eduardo,51-60 yrs,Male,Long-term(2y+),Weekly Review,85,36.5,94%,1,3,4.5,6.99%,Improving
+4/13/2026,Eduardo,51-60 yrs,Male,Long-term(2y+),Daily Therapy,86,36.4,95%,1,4,4.6,6.65%,Improving
+4/14/2026,Eduardo,51-60 yrs,Male,Long-term(2y+),Daily Therapy,86,36.5,94%,1,4,4.8,8.22%,Improving
+4/15/2026,Eduardo,51-60 yrs,Male,Long-term(2y+),Daily Therapy,86,36.2,94%,1,4,4.8,9.16%,Improving
+4/16/2026,Eduardo,51-60 yrs,Male,Long-term(2y+),Daily Therapy,83,36.5,96%,1,4,5,7.67%,Improving
+4/17/2026,Eduardo,51-60 yrs,Male,Long-term(2y+),Daily Therapy,81,36.2,96%,1,4,5.1,7.70%,Improving
+4/18/2026,Eduardo,51-60 yrs,Male,Long-term(2y+),Daily Therapy,82,36.2,95%,2,4,5.1,6.91%,Improving
+4/19/2026,Eduardo,51-60 yrs,Male,Long-term(2y+),Weekly Review,85,36.6,95%,2,4,5.1,2.11%,Improving
+4/20/2026,Eduardo,51-60 yrs,Male,Long-term(2y+),Daily Therapy,79,36.5,96%,2,4,5.3,4.60%,Improving
+4/21/2026,Eduardo,51-60 yrs,Male,Long-term(2y+),Daily Therapy,83,36.2,94%,2,4,5.4,8.46%,Improving
+4/22/2026,Eduardo,51-60 yrs,Male,Long-term(2y+),Daily Therapy,84,36.2,95%,2,4,5.4,11.90%,Improving
+4/23/2026,Eduardo,51-60 yrs,Male,Long-term(2y+),Daily Therapy,86,36.6,96%,2,5,5.5,7.63%,Improving
+4/24/2026,Eduardo,51-60 yrs,Male,Long-term(2y+),Daily Therapy,79,36.3,94%,2,5,5.6,9.77%,Improving
+4/25/2026,Eduardo,51-60 yrs,Male,Long-term(2y+),Daily Therapy,82,36.6,96%,2,5,5.6,9.91%,Improving
+4/26/2026,Eduardo,51-60 yrs,Male,Long-term(2y+),Weekly Review,82,36.4,94%,2,5,5.6,9.89%,Improving
+4/27/2026,Eduardo,51-60 yrs,Male,Long-term(2y+),Daily Therapy,82,36.3,94%,2,5,5.8,2.86%,Improving
+4/28/2026,Eduardo,51-60 yrs,Male,Long-term(2y+),Daily Therapy,79,36.6,94%,2,5,5.9,10.39%,Improving

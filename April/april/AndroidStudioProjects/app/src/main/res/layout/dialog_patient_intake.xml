@@ -1,0 +1,144 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:padding="24dp"
+    android:background="#1E293B">
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Patient Registration"
+        android:textColor="#FFFFFF"
+        android:textSize="22sp"
+        android:textStyle="bold"
+        android:layout_marginBottom="8dp" />
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Choose an existing patient or register a new one."
+        android:textColor="#94A3B8"
+        android:textSize="13sp"
+        android:layout_marginBottom="24dp" />
+
+    <!-- Name / Search -->
+    <com.google.android.material.textfield.TextInputLayout
+        android:id="@+id/tilPatientName"
+        style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:hint="Patient Name / Identifier"
+        app:hintTextColor="#38BDF8"
+        app:boxStrokeColor="#38BDF8"
+        android:textColorHint="#64748B"
+        app:startIconDrawable="@android:drawable/ic_menu_edit"
+        app:startIconTint="#38BDF8">
+
+        <AutoCompleteTextView
+            android:id="@+id/actvPatientName"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:textColor="#FFFFFF"
+            android:inputType="textPersonName"
+            android:completionThreshold="1" />
+    </com.google.android.material.textfield.TextInputLayout>
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Clinical Demographics"
+        android:textColor="#38BDF8"
+        android:textSize="11sp"
+        android:textStyle="bold"
+        android:letterSpacing="0.1"
+        android:layout_marginTop="24dp"
+        android:layout_marginBottom="12dp" />
+
+    <!-- Gender RadioGroup -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:gravity="center_vertical"
+        android:layout_marginBottom="16dp">
+        
+        <TextView
+            android:layout_width="80dp"
+            android:layout_height="wrap_content"
+            android:text="GENDER"
+            android:textColor="#94A3B8"
+            android:textSize="12sp"
+            android:textStyle="bold" />
+
+        <RadioGroup
+            android:id="@+id/rgGender"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal">
+            <RadioButton android:id="@+id/rbMale" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Male" android:textColor="#FFFFFF" android:buttonTint="#38BDF8" android:layout_marginEnd="8dp"/>
+            <RadioButton android:id="@+id/rbFemale" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Female" android:textColor="#FFFFFF" android:buttonTint="#38BDF8" android:layout_marginEnd="8dp"/>
+            <RadioButton android:id="@+id/rbOther" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Other" android:textColor="#FFFFFF" android:buttonTint="#38BDF8"/>
+        </RadioGroup>
+    </LinearLayout>
+
+    <!-- Age Range -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:gravity="center_vertical"
+        android:layout_marginBottom="16dp">
+        
+        <TextView
+            android:layout_width="80dp"
+            android:layout_height="wrap_content"
+            android:text="AGE"
+            android:textColor="#94A3B8"
+            android:textSize="12sp"
+            android:textStyle="bold" />
+
+        <Spinner
+            android:id="@+id/spinnerAgeRange"
+            android:layout_width="match_parent"
+            android:layout_height="48dp"
+            android:backgroundTint="#38BDF8" />
+    </LinearLayout>
+
+    <!-- Stroke Duration -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:gravity="center_vertical"
+        android:layout_marginBottom="24dp">
+        
+        <TextView
+            android:layout_width="80dp"
+            android:layout_height="wrap_content"
+            android:text="STROKE"
+            android:textColor="#94A3B8"
+            android:textSize="12sp"
+            android:textStyle="bold" />
+
+        <Spinner
+            android:id="@+id/spinnerStrokeDuration"
+            android:layout_width="match_parent"
+            android:layout_height="48dp"
+            android:backgroundTint="#38BDF8" />
+    </LinearLayout>
+
+    <com.google.android.material.button.MaterialButton
+        android:id="@+id/btnSavePatient"
+        android:layout_width="match_parent"
+        android:layout_height="56dp"
+        android:text="SELECT &amp; CONTINUE"
+        android:textColor="#FFFFFF"
+        android:textStyle="bold"
+        app:cornerRadius="16dp"
+        app:backgroundTint="#38BDF8"
+        android:letterSpacing="0.05" />
+
+</LinearLayout>

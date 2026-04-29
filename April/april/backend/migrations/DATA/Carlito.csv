@@ -1,0 +1,31 @@
+Date,Patient_Name,Age_Range,Gender,Stroke_Duration,Session_Type,Avg_Heart_Rate,Avg_Temp_C,Avg_SpO2,Hand_Level,Foot_Level,HII_Recovery_Index,Weekly_Improvement_Pct,Clinical_Status
+3/30/2026,Carlito,51-60 yrs,Male,Long-term(2y+),Initial Assessment,75,36.8,99%,1,1,4,0.00%,Baseline Established
+3/31/2026,Carlito,51-60 yrs,Male,Long-term(2y+),Daily Therapy,71,36.4,97%,1,1,4,6.59%,Stable
+4/1/2026,Carlito,51-60 yrs,Male,Long-term(2y+),Daily Therapy,74,36.7,97%,1,2,4.1,7.07%,Stable
+4/2/2026,Carlito,51-60 yrs,Male,Long-term(2y+),Daily Therapy,69,36.8,97%,1,2,4.1,8.45%,Stable
+4/3/2026,Carlito,51-60 yrs,Male,Long-term(2y+),Daily Therapy,76,36.6,98%,1,2,4.2,3.92%,Stable
+4/4/2026,Carlito,51-60 yrs,Male,Long-term(2y+),Daily Therapy,74,36.4,99%,1,2,4.3,5.95%,Stable
+4/5/2026,Carlito,51-60 yrs,Male,Long-term(2y+),Weekly Review,75,36.4,99%,2,2,4.5,8.47%,Stable
+4/6/2026,Carlito,51-60 yrs,Male,Long-term(2y+),Daily Therapy,76,36.4,99%,2,2,4.6,7.33%,Improving
+4/7/2026,Carlito,51-60 yrs,Male,Long-term(2y+),Daily Therapy,76,36.7,98%,2,2,4.7,6.87%,Improving
+4/8/2026,Carlito,51-60 yrs,Male,Long-term(2y+),Daily Therapy,74,36.6,97%,2,2,4.7,8.92%,Improving
+4/9/2026,Carlito,51-60 yrs,Male,Long-term(2y+),Daily Therapy,76,36.3,98%,2,2,4.7,6.25%,Improving
+4/10/2026,Carlito,51-60 yrs,Male,Long-term(2y+),Daily Therapy,68,36.4,98%,2,2,4.8,4.20%,Improving
+4/11/2026,Carlito,51-60 yrs,Male,Long-term(2y+),Daily Therapy,76,36.3,98%,2,2,4.9,3.99%,Improving
+4/12/2026,Carlito,51-60 yrs,Male,Long-term(2y+),Weekly Review,75,36.5,99%,2,2,4.9,3.04%,Improving
+4/13/2026,Carlito,51-60 yrs,Male,Long-term(2y+),Daily Therapy,73,36.4,98%,2,2,5,8.48%,Improving
+4/14/2026,Carlito,51-60 yrs,Male,Long-term(2y+),Daily Therapy,74,36.4,99%,2,3,5,5.13%,Improving
+4/15/2026,Carlito,51-60 yrs,Male,Long-term(2y+),Daily Therapy,71,36.7,99%,2,3,5.2,10.58%,Improving
+4/16/2026,Carlito,51-60 yrs,Male,Long-term(2y+),Daily Therapy,73,36.6,99%,2,3,5.2,7.73%,Improving
+4/17/2026,Carlito,51-60 yrs,Male,Long-term(2y+),Daily Therapy,70,36.3,98%,2,3,5.2,9.24%,Improving
+4/18/2026,Carlito,51-60 yrs,Male,Long-term(2y+),Daily Therapy,69,36.4,99%,2,3,5.3,8.56%,Improving
+4/19/2026,Carlito,51-60 yrs,Male,Long-term(2y+),Weekly Review,71,36.6,98%,2,3,5.4,8.07%,Improving
+4/20/2026,Carlito,51-60 yrs,Male,Long-term(2y+),Daily Therapy,74,36.6,99%,2,3,5.5,9.59%,Improving
+4/21/2026,Carlito,51-60 yrs,Male,Long-term(2y+),Daily Therapy,73,36.7,99%,3,3,5.6,11.02%,Improving
+4/22/2026,Carlito,51-60 yrs,Male,Long-term(2y+),Daily Therapy,74,36.7,99%,3,3,5.7,3.56%,Improving
+4/23/2026,Carlito,51-60 yrs,Male,Long-term(2y+),Daily Therapy,71,36.8,99%,3,3,5.8,4.55%,Improving
+4/24/2026,Carlito,51-60 yrs,Male,Long-term(2y+),Daily Therapy,71,36.8,97%,3,4,5.9,9.28%,Improving
+4/25/2026,Carlito,51-60 yrs,Male,Long-term(2y+),Daily Therapy,68,36.5,97%,3,4,6,10.31%,Improving
+4/26/2026,Carlito,51-60 yrs,Male,Long-term(2y+),Weekly Review,70,36.4,98%,3,4,6,2.96%,Improving
+4/27/2026,Carlito,51-60 yrs,Male,Long-term(2y+),Daily Therapy,73,36.4,97%,3,4,6.1,2.90%,Improving
+4/28/2026,Carlito,51-60 yrs,Male,Long-term(2y+),Daily Therapy,76,36.7,99%,3,4,6.2,11.30%,Improving

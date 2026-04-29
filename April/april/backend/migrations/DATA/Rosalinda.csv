@@ -1,0 +1,31 @@
+Date,Patient_Name,Age_Range,Gender,Stroke_Duration,Session_Type,Avg_Heart_Rate,Avg_Temp_C,Avg_SpO2,Hand_Level,Foot_Level,HII_Recovery_Index,Weekly_Improvement_Pct,Clinical_Status
+3/30/2026,Rosalinda,40-50 yrs,Female,Long-term(2y+),Initial Assessment,73,36.3,94%,0,1,4.2,0.00%,Baseline Established
+3/31/2026,Rosalinda,40-50 yrs,Female,Long-term(2y+),Daily Therapy,78,36.6,96%,0,1,4.2,8.20%,Stable
+4/1/2026,Rosalinda,40-50 yrs,Female,Long-term(2y+),Daily Therapy,80,36.3,96%,0,1,4.3,7.06%,Stable
+4/2/2026,Rosalinda,40-50 yrs,Female,Long-term(2y+),Daily Therapy,79,36.3,94%,1,1,4.4,4.26%,Stable
+4/3/2026,Rosalinda,40-50 yrs,Female,Long-term(2y+),Daily Therapy,80,36.5,96%,1,2,4.5,8.73%,Stable
+4/4/2026,Rosalinda,40-50 yrs,Female,Long-term(2y+),Daily Therapy,75,36.6,95%,1,3,4.5,2.34%,Improving
+4/5/2026,Rosalinda,40-50 yrs,Female,Long-term(2y+),Weekly Review,76,36.6,95%,1,3,4.7,5.58%,Improving
+4/6/2026,Rosalinda,40-50 yrs,Female,Long-term(2y+),Daily Therapy,80,36.3,96%,1,3,4.8,6.69%,Improving
+4/7/2026,Rosalinda,40-50 yrs,Female,Long-term(2y+),Daily Therapy,74,36.4,96%,1,3,5,10.40%,Improving
+4/8/2026,Rosalinda,40-50 yrs,Female,Long-term(2y+),Daily Therapy,75,36.3,95%,1,4,5,5.29%,Improving
+4/9/2026,Rosalinda,40-50 yrs,Female,Long-term(2y+),Daily Therapy,76,36.6,94%,1,4,5,6.75%,Improving
+4/10/2026,Rosalinda,40-50 yrs,Female,Long-term(2y+),Daily Therapy,80,36.7,95%,1,4,5,11.89%,Improving
+4/11/2026,Rosalinda,40-50 yrs,Female,Long-term(2y+),Daily Therapy,81,36.7,94%,1,4,5.1,9.51%,Improving
+4/12/2026,Rosalinda,40-50 yrs,Female,Long-term(2y+),Weekly Review,73,36.4,96%,1,5,5.2,8.09%,Improving
+4/13/2026,Rosalinda,40-50 yrs,Female,Long-term(2y+),Daily Therapy,74,36.6,96%,2,5,5.2,11.36%,Improving
+4/14/2026,Rosalinda,40-50 yrs,Female,Long-term(2y+),Daily Therapy,73,36.5,95%,2,5,5.3,3.13%,Improving
+4/15/2026,Rosalinda,40-50 yrs,Female,Long-term(2y+),Daily Therapy,73,36.4,95%,2,5,5.4,9.88%,Improving
+4/16/2026,Rosalinda,40-50 yrs,Female,Long-term(2y+),Daily Therapy,76,36.5,94%,2,5,5.4,6.41%,Improving
+4/17/2026,Rosalinda,40-50 yrs,Female,Long-term(2y+),Daily Therapy,76,36.4,95%,2,5,5.5,4.76%,Improving
+4/18/2026,Rosalinda,40-50 yrs,Female,Long-term(2y+),Daily Therapy,75,36.5,96%,2,5,5.6,10.55%,Improving
+4/19/2026,Rosalinda,40-50 yrs,Female,Long-term(2y+),Weekly Review,75,36.5,96%,2,5,5.7,10.93%,Improving
+4/20/2026,Rosalinda,40-50 yrs,Female,Long-term(2y+),Daily Therapy,79,36.6,94%,2,5,5.7,4.94%,Improving
+4/21/2026,Rosalinda,40-50 yrs,Female,Long-term(2y+),Daily Therapy,78,36.5,94%,2,5,5.8,6.69%,Improving
+4/22/2026,Rosalinda,40-50 yrs,Female,Long-term(2y+),Daily Therapy,73,36.3,96%,2,5,5.8,7.52%,Improving
+4/23/2026,Rosalinda,40-50 yrs,Female,Long-term(2y+),Daily Therapy,79,36.4,95%,2,5,5.9,9.91%,Improving
+4/24/2026,Rosalinda,40-50 yrs,Female,Long-term(2y+),Daily Therapy,80,36.6,94%,2,5,6,11.45%,Improving
+4/25/2026,Rosalinda,40-50 yrs,Female,Long-term(2y+),Daily Therapy,74,36.4,94%,2,5,6,11.98%,Improving
+4/26/2026,Rosalinda,40-50 yrs,Female,Long-term(2y+),Weekly Review,78,36.3,95%,2,5,6.2,10.03%,Improving
+4/27/2026,Rosalinda,40-50 yrs,Female,Long-term(2y+),Daily Therapy,81,36.4,95%,2,5,6.2,9.83%,Improving
+4/28/2026,Rosalinda,40-50 yrs,Female,Long-term(2y+),Daily Therapy,76,36.4,95%,2,5,6.2,7.54%,Improving

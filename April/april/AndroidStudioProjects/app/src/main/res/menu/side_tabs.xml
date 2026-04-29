@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+    <item
+        android:id="@+id/snv_Dashboard"
+        android:title="Dashboard" />
+    <item
+        android:id="@+id/snv_Profile"
+        android:title="Profile" />
+    <item
+        android:id="@+id/snv_monitoring"
+        android:title="Monitoring" />
+    <item
+        android:id="@+id/snv_dashboard_web"
+        android:title="Equipment Dashboard" />
+    <item
+        android:id="@+id/snv_Progress"
+        android:title="Progress" />
+    <item
+        android:id="@+id/snv_HubSettings"
+        android:title="Hub WiFi Settings" />
+    <item
+        android:id="@+id/snv_About"
+        android:title="About System" />
+    <item
+        android:id="@+id/snv_Logout"
+        android:title="Sign Out" />
+</menu>

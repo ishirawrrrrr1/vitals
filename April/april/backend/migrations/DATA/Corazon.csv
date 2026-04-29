@@ -1,0 +1,31 @@
+Date,Patient_Name,Age_Range,Gender,Stroke_Duration,Session_Type,Avg_Heart_Rate,Avg_Temp_C,Avg_SpO2,Hand_Level,Foot_Level,HII_Recovery_Index,Weekly_Improvement_Pct,Clinical_Status
+3/30/2026,Corazon,61-70 yrs,Female,Long-term(2y+),Initial Assessment,73,36.5,96%,1,0,3.5,0.00%,Baseline Established
+3/31/2026,Corazon,61-70 yrs,Female,Long-term(2y+),Daily Therapy,70,36.9,96%,1,0,3.5,9.11%,Stable
+4/1/2026,Corazon,61-70 yrs,Female,Long-term(2y+),Daily Therapy,73,36.5,96%,1,0,3.7,8.56%,Stable
+4/2/2026,Corazon,61-70 yrs,Female,Long-term(2y+),Daily Therapy,73,36.6,97%,1,0,3.7,7.30%,Stable
+4/3/2026,Corazon,61-70 yrs,Female,Long-term(2y+),Daily Therapy,77,37,97%,1,0,3.8,10.37%,Stable
+4/4/2026,Corazon,61-70 yrs,Female,Long-term(2y+),Daily Therapy,70,36.7,96%,1,0,3.9,8.52%,Stable
+4/5/2026,Corazon,61-70 yrs,Female,Long-term(2y+),Weekly Review,70,36.9,97%,1,1,4,4.73%,Stable
+4/6/2026,Corazon,61-70 yrs,Female,Long-term(2y+),Daily Therapy,71,36.9,96%,1,1,4,2.59%,Stable
+4/7/2026,Corazon,61-70 yrs,Female,Long-term(2y+),Daily Therapy,77,36.6,97%,2,1,4.1,2.51%,Stable
+4/8/2026,Corazon,61-70 yrs,Female,Long-term(2y+),Daily Therapy,73,36.9,95%,2,1,4.2,10.45%,Stable
+4/9/2026,Corazon,61-70 yrs,Female,Long-term(2y+),Daily Therapy,72,36.6,96%,2,2,4.3,8.60%,Stable
+4/10/2026,Corazon,61-70 yrs,Female,Long-term(2y+),Daily Therapy,71,36.8,95%,2,2,4.4,4.30%,Stable
+4/11/2026,Corazon,61-70 yrs,Female,Long-term(2y+),Daily Therapy,70,36.8,96%,2,2,4.5,2.24%,Stable
+4/12/2026,Corazon,61-70 yrs,Female,Long-term(2y+),Weekly Review,76,36.6,95%,2,2,4.5,6.72%,Improving
+4/13/2026,Corazon,61-70 yrs,Female,Long-term(2y+),Daily Therapy,77,36.8,95%,2,2,4.7,10.30%,Improving
+4/14/2026,Corazon,61-70 yrs,Female,Long-term(2y+),Daily Therapy,70,36.9,97%,2,3,4.7,9.55%,Improving
+4/15/2026,Corazon,61-70 yrs,Female,Long-term(2y+),Daily Therapy,78,36.7,95%,3,3,4.8,11.69%,Improving
+4/16/2026,Corazon,61-70 yrs,Female,Long-term(2y+),Daily Therapy,70,36.8,95%,4,3,4.9,7.02%,Improving
+4/17/2026,Corazon,61-70 yrs,Female,Long-term(2y+),Daily Therapy,77,37,95%,4,4,5,8.24%,Improving
+4/18/2026,Corazon,61-70 yrs,Female,Long-term(2y+),Daily Therapy,73,36.9,95%,4,4,5.1,11.02%,Improving
+4/19/2026,Corazon,61-70 yrs,Female,Long-term(2y+),Weekly Review,73,36.8,95%,4,4,5.2,8.04%,Improving
+4/20/2026,Corazon,61-70 yrs,Female,Long-term(2y+),Daily Therapy,78,36.7,96%,4,4,5.3,2.91%,Improving
+4/21/2026,Corazon,61-70 yrs,Female,Long-term(2y+),Daily Therapy,73,36.8,96%,4,4,5.4,6.35%,Improving
+4/22/2026,Corazon,61-70 yrs,Female,Long-term(2y+),Daily Therapy,72,36.5,95%,4,4,5.4,11.88%,Improving
+4/23/2026,Corazon,61-70 yrs,Female,Long-term(2y+),Daily Therapy,72,36.8,96%,4,4,5.5,11.24%,Improving
+4/24/2026,Corazon,61-70 yrs,Female,Long-term(2y+),Daily Therapy,71,36.5,97%,4,4,5.6,2.61%,Improving
+4/25/2026,Corazon,61-70 yrs,Female,Long-term(2y+),Daily Therapy,78,36.6,95%,4,4,5.7,9.46%,Improving
+4/26/2026,Corazon,61-70 yrs,Female,Long-term(2y+),Weekly Review,75,36.8,96%,4,4,5.8,5.80%,Improving
+4/27/2026,Corazon,61-70 yrs,Female,Long-term(2y+),Daily Therapy,77,36.9,97%,4,4,5.8,2.43%,Improving
+4/28/2026,Corazon,61-70 yrs,Female,Long-term(2y+),Daily Therapy,71,36.7,95%,4,4,5.8,11.53%,Improving

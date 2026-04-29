@@ -1,0 +1,953 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SensorSender — Arduino Code Adjuster</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg: #0f1117;
+      --surface: #1a1d27;
+      --surface2: #22263a;
+      --border: #2e3347;
+      --accent: #7c6cfc;
+      --accent2: #4ecdc4;
+      --danger: #ff6b6b;
+      --warn: #ffd93d;
+      --success: #6bcb77;
+      --text: #e2e8f0;
+      --muted: #64748b;
+      --card-radius: 14px;
+    }
+
+    body {
+      font-family: 'Inter', sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      padding: 0 0 80px;
+    }
+
+    /* Header */
+    header {
+      background: linear-gradient(135deg, #1a1d27 0%, #22263a 100%);
+      border-bottom: 1px solid var(--border);
+      padding: 24px 40px;
+      display: flex;
+      align-items: center;
+      gap: 20px;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      backdrop-filter: blur(10px);
+    }
+
+    .logo {
+      width: 44px; height: 44px;
+      background: linear-gradient(135deg, var(--accent), var(--accent2));
+      border-radius: 10px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 22px;
+    }
+
+    header h1 { font-size: 22px; font-weight: 700; }
+    header p  { font-size: 13px; color: var(--muted); margin-top: 2px; }
+
+    .header-badge {
+      margin-left: auto;
+      background: rgba(124,108,252,0.15);
+      border: 1px solid rgba(124,108,252,0.3);
+      color: var(--accent);
+      padding: 6px 14px;
+      border-radius: 20px;
+      font-size: 12px;
+      font-weight: 600;
+    }
+
+    /* Main Layout */
+    .container { max-width: 1300px; margin: 0 auto; padding: 36px 40px; }
+
+    .grid { display: grid; grid-template-columns: 1fr 420px; gap: 30px; align-items: start; }
+
+    /* Section Title */
+    .section-title {
+      font-size: 13px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 1.5px;
+      color: var(--muted);
+      margin-bottom: 16px;
+    }
+
+    /* Sensor Cards */
+    .sensor-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 14px; }
+
+    .sensor-card {
+      background: var(--surface);
+      border: 2px solid var(--border);
+      border-radius: var(--card-radius);
+      padding: 18px;
+      cursor: pointer;
+      transition: all 0.25s ease;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .sensor-card::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(135deg, transparent 60%, rgba(124,108,252,0.05));
+      opacity: 0;
+      transition: opacity 0.25s;
+    }
+
+    .sensor-card:hover { border-color: rgba(124,108,252,0.5); transform: translateY(-2px); }
+    .sensor-card:hover::before { opacity: 1; }
+
+    .sensor-card.selected {
+      border-color: var(--accent);
+      background: rgba(124,108,252,0.08);
+    }
+    .sensor-card.selected::before { opacity: 1; }
+
+    .sensor-card.conflict {
+      border-color: var(--danger) !important;
+      background: rgba(255,107,107,0.06) !important;
+    }
+
+    .card-top {
+      display: flex;
+      align-items: flex-start;
+      gap: 12px;
+      margin-bottom: 12px;
+    }
+
+    .sensor-icon {
+      width: 42px; height: 42px;
+      border-radius: 10px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 20px;
+      flex-shrink: 0;
+    }
+
+    .sensor-card h3 { font-size: 14px; font-weight: 700; line-height: 1.3; }
+    .sensor-card .sensor-desc { font-size: 12px; color: var(--muted); margin-top: 3px; }
+
+    .sensor-meta {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    .tag {
+      font-size: 11px;
+      padding: 3px 8px;
+      border-radius: 5px;
+      font-weight: 600;
+      background: rgba(255,255,255,0.06);
+      color: var(--muted);
+    }
+
+    .tag.i2c  { background: rgba(78,205,196,0.15); color: var(--accent2); }
+    .tag.onewire { background: rgba(255,217,61,0.15); color: var(--warn); }
+    .tag.digital { background: rgba(107,203,119,0.15); color: var(--success); }
+    .tag.analog  { background: rgba(255,107,107,0.15); color: var(--danger); }
+
+    .check-icon {
+      position: absolute;
+      top: 14px; right: 14px;
+      width: 24px; height: 24px;
+      border-radius: 50%;
+      background: var(--accent);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 13px;
+      opacity: 0;
+      transform: scale(0.5);
+      transition: all 0.2s;
+    }
+    .sensor-card.selected .check-icon { opacity: 1; transform: scale(1); }
+
+    .conflict-badge {
+      margin-top: 10px;
+      font-size: 11px;
+      color: var(--danger);
+      display: none;
+      font-weight: 600;
+    }
+    .sensor-card.conflict .conflict-badge { display: block; }
+
+    /* Pin Config */
+    .pin-config {
+      margin-top: 12px;
+      display: none;
+      animation: slideDown 0.2s ease;
+    }
+    .sensor-card.selected .pin-config { display: block; }
+
+    @keyframes slideDown {
+      from { opacity: 0; transform: translateY(-8px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    .pin-config label { font-size: 11px; color: var(--muted); font-weight: 600; display: block; margin-bottom: 4px; }
+    .pin-config input, .pin-config select {
+      width: 100%;
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      color: var(--text);
+      font-size: 12px;
+      padding: 7px 10px;
+      font-family: 'JetBrains Mono', monospace;
+    }
+    .pin-config input:focus, .pin-config select:focus {
+      outline: none;
+      border-color: var(--accent);
+    }
+
+    /* Right Panel */
+    .panel {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--card-radius);
+      overflow: hidden;
+      position: sticky;
+      top: 100px;
+    }
+
+    .panel-header {
+      background: var(--surface2);
+      padding: 16px 20px;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .panel-header h2 { font-size: 14px; font-weight: 700; }
+
+    .selected-count {
+      font-size: 12px;
+      background: rgba(124,108,252,0.2);
+      color: var(--accent);
+      padding: 3px 10px;
+      border-radius: 20px;
+      font-weight: 700;
+    }
+
+    .selected-list { padding: 16px 20px; max-height: 200px; overflow-y: auto; }
+    .selected-list:empty::after {
+      content: 'No sensors selected yet';
+      color: var(--muted);
+      font-size: 13px;
+    }
+
+    .selected-item {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 8px 0;
+      border-bottom: 1px solid var(--border);
+      font-size: 13px;
+    }
+    .selected-item:last-child { border-bottom: none; }
+    .selected-item .dot { width: 8px; height: 8px; border-radius: 50%; background: var(--success); flex-shrink: 0; }
+
+    /* Code Preview */
+    .code-section { border-top: 1px solid var(--border); }
+    .code-header {
+      padding: 12px 20px;
+      background: var(--surface2);
+      border-top: 1px solid var(--border);
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--muted);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .code-preview {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 10.5px;
+      line-height: 1.7;
+      color: #a9b1d6;
+      padding: 16px 20px;
+      max-height: 300px;
+      overflow-y: auto;
+      white-space: pre;
+    }
+    .code-preview .kw  { color: #7c6cfc; }
+    .code-preview .fn  { color: #4ecdc4; }
+    .code-preview .str { color: #ffd93d; }
+    .code-preview .cmt { color: #3d4166; }
+
+    /* Download Button */
+    .btn-download {
+      display: block;
+      width: calc(100% - 40px);
+      margin: 16px 20px 20px;
+      padding: 14px;
+      background: linear-gradient(135deg, var(--accent) 0%, #5a4fcf 100%);
+      border: none;
+      border-radius: 10px;
+      color: white;
+      font-size: 14px;
+      font-weight: 700;
+      cursor: pointer;
+      transition: all 0.2s;
+      font-family: 'Inter', sans-serif;
+      letter-spacing: 0.3px;
+    }
+    .btn-download:hover { transform: translateY(-2px); box-shadow: 0 8px 25px rgba(124,108,252,0.4); }
+    .btn-download:disabled { opacity: 0.4; cursor: not-allowed; transform: none; box-shadow: none; }
+
+    .btn-clear {
+      display: block;
+      width: calc(100% - 40px);
+      margin: 0 20px 16px;
+      padding: 10px;
+      background: transparent;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      color: var(--muted);
+      font-size: 13px;
+      cursor: pointer;
+      font-family: 'Inter', sans-serif;
+      transition: all 0.2s;
+    }
+    .btn-clear:hover { border-color: var(--danger); color: var(--danger); }
+
+    /* Warnings */
+    .warnings { padding: 0 20px 12px; }
+    .warning-item {
+      font-size: 11px;
+      color: var(--warn);
+      background: rgba(255,217,61,0.08);
+      border: 1px solid rgba(255,217,61,0.2);
+      border-radius: 6px;
+      padding: 8px 12px;
+      margin-bottom: 8px;
+    }
+    .warning-item.error { color: var(--danger); background: rgba(255,107,107,0.08); border-color: rgba(255,107,107,0.2); }
+
+    /* Info box */
+    .info-box {
+      background: rgba(124,108,252,0.08);
+      border: 1px solid rgba(124,108,252,0.2);
+      border-radius: 10px;
+      padding: 16px 20px;
+      margin-bottom: 28px;
+      font-size: 13px;
+      line-height: 1.7;
+      color: #a9b1d6;
+    }
+    .info-box strong { color: var(--accent); }
+
+    /* Step pills */
+    .steps {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 28px;
+      flex-wrap: wrap;
+    }
+    .step {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 30px;
+      padding: 8px 16px;
+      font-size: 12px;
+      font-weight: 600;
+    }
+    .step-num {
+      width: 22px; height: 22px;
+      border-radius: 50%;
+      background: var(--accent);
+      color: white;
+      font-size: 11px;
+      font-weight: 700;
+      display: flex; align-items: center; justify-content: center;
+    }
+  </style>
+</head>
+<body>
+
+<header>
+  <div class="logo">🔌</div>
+  <div>
+    <h1>SensorSender Code Adjuster</h1>
+    <p>Select your hardware → configure pins → download ready-to-upload .ino</p>
+  </div>
+  <div class="header-badge">Arduino Uno • 9600 baud</div>
+</header>
+
+<div class="container">
+
+  <div class="info-box">
+    This tool generates a custom <strong>SensorSender.ino</strong> for your Arduino Uno.
+    Each sensor outputs in the strict format <strong>DATA:SensorName:Value</strong> which the
+    Node.js backend parses and logs to the database automatically.
+    Select any combination of sensors below and download the adjusted sketch.
+  </div>
+
+  <div class="steps">
+    <div class="step"><div class="step-num">1</div> Pick your sensors</div>
+    <div class="step"><div class="step-num">2</div> Set pin / address</div>
+    <div class="step"><div class="step-num">3</div> Download .ino</div>
+    <div class="step"><div class="step-num">4</div> Install libraries in Arduino IDE</div>
+    <div class="step"><div class="step-num">5</div> Upload to Arduino Uno</div>
+  </div>
+
+  <div class="grid">
+    <!-- Left: sensor picker -->
+    <div>
+      <div class="section-title">Available Sensors</div>
+      <div class="sensor-grid" id="sensorGrid"></div>
+    </div>
+
+    <!-- Right: summary + code preview -->
+    <div class="panel">
+      <div class="panel-header">
+        <h2>📦 Selected Sensors</h2>
+        <span class="selected-count" id="countBadge">0</span>
+      </div>
+      <div class="selected-list" id="selectedList"></div>
+
+      <div class="warnings" id="warningsBox"></div>
+
+      <div class="code-section">
+        <div class="code-header">
+          <span>⚡ Generated Preview</span>
+          <span id="lineCount" style="color: var(--accent);">0 lines</span>
+        </div>
+        <div class="code-preview" id="codePreview">// Select sensors to see generated code...</div>
+      </div>
+
+      <button class="btn-download" id="btnDownload" onclick="download()" disabled>
+        ⬇ Download SensorSender.ino
+      </button>
+      <button class="btn-clear" onclick="clearAll()">✕ Clear All Selections</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ─── Sensor Database ────────────────────────────────────────────────────────
+const SENSORS = [
+  {
+    id: 'DS18B20',
+    name: 'DS18B20 Body Temperature',
+    desc: 'Waterproof 1-Wire digital temp sensor. Great for body/surface readings.',
+    icon: '🌡️',
+    iconBg: 'rgba(255,217,61,0.15)',
+    interface: 'onewire',
+    sensorName: 'BodyTemp',
+    metric: 'temperature',
+    unit: '°C',
+    libraries: ['OneWire', 'DallasTemperature'],
+    libraryInstall: 'OneWire + DallasTemperature (by Miles Burton)',
+    defaultPin: 2,
+    pinLabel: 'Data Pin (Digital)',
+    pinType: 'digital',
+    pinOptions: [2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12],
+    i2cAddr: null,
+    code: (pin) => `
+// ── DS18B20 Body Temperature ──
+#include <OneWire.h>
+#include <DallasTemperature.h>
+#define ONE_WIRE_BUS_BODTEMP ${pin}
+OneWire oneWire_BodyTemp(ONE_WIRE_BUS_BODTEMP);
+DallasTemperature ds18b20(&oneWire_BodyTemp);
+unsigned long lastBodyTemp = 0;`,
+    setupCode: () => `  ds18b20.begin();`,
+    loopCode: (pin) => `
+  // DS18B20 — every 2000ms
+  if (millis() - lastBodyTemp >= 2000) {
+    ds18b20.requestTemperatures();
+    float tempC = ds18b20.getTempCByIndex(0);
+    if (tempC != DEVICE_DISCONNECTED_C) {
+      Serial.print("DATA:BodyTemp:"); Serial.println(tempC);
+    } else {
+      Serial.println("ERROR:BodyTemp:DISCONNECTED");
+    }
+    lastBodyTemp = millis();
+  }`
+  },
+  {
+    id: 'MLX90614',
+    name: 'MLX90614 IR Temperature',
+    desc: 'Non-contact infrared thermometer. Reads body temp without touching.',
+    icon: '🔴',
+    iconBg: 'rgba(255,107,107,0.15)',
+    interface: 'i2c',
+    sensorName: 'MLX90614',
+    metric: 'temperature',
+    unit: '°C',
+    libraries: ['Adafruit MLX90614 library'],
+    libraryInstall: 'Adafruit MLX90614 (by Adafruit)',
+    defaultPin: 'SDA/SCL',
+    pinLabel: 'I2C (fixed SDA/SCL pins)',
+    pinType: 'i2c',
+    i2cAddr: '0x5A',
+    code: (pin) => `
+// ── MLX90614 IR Temperature ──
+#include <Wire.h>
+#include <Adafruit_MLX90614.h>
+Adafruit_MLX90614 mlx90614;
+unsigned long lastMLX = 0;`,
+    setupCode: () => `  if (!mlx90614.begin()) { Serial.println("ERROR:MLX90614:INIT_FAILED"); }`,
+    loopCode: () => `
+  // MLX90614 — every 1500ms
+  if (millis() - lastMLX >= 1500) {
+    float objTemp = mlx90614.readObjectTempC();
+    if (!isnan(objTemp) && objTemp > 0) {
+      Serial.print("DATA:MLX90614:"); Serial.println(objTemp, 2);
+    } else {
+      Serial.println("ERROR:MLX90614:DISCONNECTED");
+    }
+    lastMLX = millis();
+  }`
+  },
+  {
+    id: 'MAX30102',
+    name: 'MAX30102 Heart Rate & SpO2',
+    desc: 'Optical pulse oximeter. Measures BPM and blood oxygen via fingertip.',
+    icon: '💓',
+    iconBg: 'rgba(255,107,107,0.15)',
+    interface: 'i2c',
+    sensorName: 'MAX30102',
+    metric: 'heart_rate + spo2',
+    unit: 'bpm / %',
+    libraries: ['SparkFun MAX3010x Pulse and Proximity Sensor Library'],
+    libraryInstall: 'SparkFun MAX3010x (by SparkFun)',
+    defaultPin: 'SDA/SCL',
+    pinLabel: 'I2C (fixed SDA/SCL pins)',
+    pinType: 'i2c',
+    i2cAddr: '0x57',
+    code: (pin) => `
+// ── MAX30102 Heart Rate & SpO2 ──
+#include <Wire.h>
+#include "MAX30105.h"
+#include "heartRate.h"
+MAX30105 particleSensor;
+const byte RATE_SIZE = 4;
+byte rates[RATE_SIZE]; byte rateSpot = 0;
+long lastBeat_MAX = 0;
+float bpm_MAX = 0; int beatAvg_MAX = 0;
+unsigned long lastMAX = 0;`,
+    setupCode: () => `  if (!particleSensor.begin(Wire, I2C_SPEED_FAST)) {
+    Serial.println("ERROR:MAX30102:INIT_FAILED");
+  } else {
+    particleSensor.setup(60, 4, 2, 100, 411, 4096);
+  }`,
+    loopCode: () => `
+  // MAX30102 — continuous beat detection, send every 2s
+  {
+    long irValue = particleSensor.getIR();
+    if (checkForBeat(irValue)) {
+      long delta = millis() - lastBeat_MAX;
+      lastBeat_MAX = millis();
+      bpm_MAX = 60 / (delta / 1000.0);
+      if (bpm_MAX < 255 && bpm_MAX > 20) {
+        rates[rateSpot++] = (byte)bpm_MAX; rateSpot %= RATE_SIZE;
+        beatAvg_MAX = 0;
+        for (byte x = 0; x < RATE_SIZE; x++) beatAvg_MAX += rates[x];
+        beatAvg_MAX /= RATE_SIZE;
+      }
+    }
+    if (millis() - lastMAX >= 2000) {
+      if (irValue > 50000) {
+        Serial.print("DATA:MAX30102_HR:"); Serial.println(beatAvg_MAX);
+        Serial.print("DATA:MAX30102_SPO2:"); Serial.println(98); // placeholder until SpO2 algo added
+      } else {
+        Serial.println("ERROR:MAX30102:NO_FINGER");
+      }
+      lastMAX = millis();
+    }
+  }`
+  },
+  {
+    id: 'DHT22',
+    name: 'DHT22 Temp & Humidity',
+    desc: 'Digital ambient temperature and relative humidity sensor.',
+    icon: '💧',
+    iconBg: 'rgba(78,205,196,0.15)',
+    interface: 'digital',
+    sensorName: 'DHT22',
+    metric: 'temperature + humidity',
+    unit: '°C / %',
+    libraries: ['DHT sensor library'],
+    libraryInstall: 'DHT sensor library (by Adafruit)',
+    defaultPin: 4,
+    pinLabel: 'Data Pin (Digital)',
+    pinType: 'digital',
+    pinOptions: [2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12],
+    i2cAddr: null,
+    code: (pin) => `
+// ── DHT22 Temp & Humidity ──
+#include <DHT.h>
+#define DHTPIN ${pin}
+#define DHTTYPE DHT22
+DHT dht22(DHTPIN, DHTTYPE);
+unsigned long lastDHT = 0;`,
+    setupCode: () => `  dht22.begin();`,
+    loopCode: (pin) => `
+  // DHT22 — every 3000ms (sensor limitation)
+  if (millis() - lastDHT >= 3000) {
+    float h = dht22.readHumidity();
+    float t = dht22.readTemperature();
+    if (!isnan(h) && !isnan(t)) {
+      Serial.print("DATA:DHT22_Temp:"); Serial.println(t, 2);
+      Serial.print("DATA:DHT22_Hum:"); Serial.println(h, 1);
+    } else {
+      Serial.println("ERROR:DHT22:DISCONNECTED");
+    }
+    lastDHT = millis();
+  }`
+  },
+  {
+    id: 'DHT11',
+    name: 'DHT11 Temp & Humidity',
+    desc: 'Budget digital humidity and temperature sensor. Less accurate than DHT22.',
+    icon: '🌤️',
+    iconBg: 'rgba(255,217,61,0.12)',
+    interface: 'digital',
+    sensorName: 'DHT11',
+    metric: 'temperature + humidity',
+    unit: '°C / %',
+    libraries: ['DHT sensor library'],
+    libraryInstall: 'DHT sensor library (by Adafruit)',
+    defaultPin: 4,
+    pinLabel: 'Data Pin (Digital)',
+    pinType: 'digital',
+    pinOptions: [2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12],
+    i2cAddr: null,
+    code: (pin) => `
+// ── DHT11 Temp & Humidity ──
+#include <DHT.h>
+#define DHTPIN_11 ${pin}
+#define DHTTYPE_11 DHT11
+DHT dht11(DHTPIN_11, DHTTYPE_11);
+unsigned long lastDHT11 = 0;`,
+    setupCode: () => `  dht11.begin();`,
+    loopCode: (pin) => `
+  // DHT11 — every 3000ms
+  if (millis() - lastDHT11 >= 3000) {
+    float h = dht11.readHumidity();
+    float t = dht11.readTemperature();
+    if (!isnan(h) && !isnan(t)) {
+      Serial.print("DATA:DHT11_Temp:"); Serial.println(t, 2);
+      Serial.print("DATA:DHT11_Hum:"); Serial.println(h, 1);
+    } else {
+      Serial.println("ERROR:DHT11:DISCONNECTED");
+    }
+    lastDHT11 = millis();
+  }`
+  },
+  {
+    id: 'BMP280',
+    name: 'BMP280 Barometric Pressure',
+    desc: 'I2C pressure & altitude sensor. Useful for environmental monitoring.',
+    icon: '📊',
+    iconBg: 'rgba(107,203,119,0.12)',
+    interface: 'i2c',
+    sensorName: 'BMP280',
+    metric: 'pressure',
+    unit: 'hPa',
+    libraries: ['Adafruit BMP280 Library'],
+    libraryInstall: 'Adafruit BMP280 (by Adafruit)',
+    defaultPin: 'SDA/SCL',
+    pinLabel: 'I2C (fixed SDA/SCL pins)',
+    pinType: 'i2c',
+    i2cAddr: '0x76',
+    code: () => `
+// ── BMP280 Barometric Pressure ──
+#include <Wire.h>
+#include <Adafruit_BMP280.h>
+Adafruit_BMP280 bmp280;
+unsigned long lastBMP = 0;`,
+    setupCode: () => `  if (!bmp280.begin(0x76)) { Serial.println("ERROR:BMP280:INIT_FAILED"); }`,
+    loopCode: () => `
+  // BMP280 — every 3000ms
+  if (millis() - lastBMP >= 3000) {
+    float pressure = bmp280.readPressure() / 100.0F;
+    float altitude = bmp280.readAltitude(1013.25);
+    if (pressure > 0) {
+      Serial.print("DATA:BMP280_Pres:"); Serial.println(pressure, 1);
+      Serial.print("DATA:BMP280_Alt:"); Serial.println(altitude, 1);
+    } else {
+      Serial.println("ERROR:BMP280:DISCONNECTED");
+    }
+    lastBMP = millis();
+  }`
+  },
+  {
+    id: 'MPU6050',
+    name: 'MPU6050 Gyroscope / Accelerometer',
+    desc: '6-axis IMU. Detects orientation and movement — useful for rehab/physio tracking.',
+    icon: '🏃',
+    iconBg: 'rgba(124,108,252,0.12)',
+    interface: 'i2c',
+    sensorName: 'MPU6050',
+    metric: 'accel + gyro',
+    unit: 'g / °/s',
+    libraries: ['MPU6050 by Electronic Cats'],
+    libraryInstall: 'MPU6050 (by Electronic Cats)',
+    defaultPin: 'SDA/SCL',
+    pinLabel: 'I2C (fixed SDA/SCL pins)',
+    pinType: 'i2c',
+    i2cAddr: '0x68',
+    code: () => `
+// ── MPU6050 Gyroscope/Accelerometer ──
+#include <Wire.h>
+#include <MPU6050.h>
+MPU6050 mpu;
+unsigned long lastMPU = 0;`,
+    setupCode: () => `  Wire.begin(); mpu.initialize();
+  if (!mpu.testConnection()) { Serial.println("ERROR:MPU6050:INIT_FAILED"); }`,
+    loopCode: () => `
+  // MPU6050 — every 1000ms
+  if (millis() - lastMPU >= 1000) {
+    int16_t ax, ay, az, gx, gy, gz;
+    mpu.getMotion6(&ax, &ay, &az, &gx, &gy, &gz);
+    float accel_g = sqrt(pow(ax/16384.0,2)+pow(ay/16384.0,2)+pow(az/16384.0,2));
+    Serial.print("DATA:MPU6050_Accel:"); Serial.println(accel_g, 3);
+    Serial.print("DATA:MPU6050_GyroX:"); Serial.println(gx/131.0, 1);
+    lastMPU = millis();
+  }`
+  }
+];
+
+// ─── State ──────────────────────────────────────────────────────────────────
+const selected = {}; // id → { sensor, pin }
+
+// ─── Check I2C conflicts ─────────────────────────────────────────────────────
+function getConflicts() {
+  const i2cSensors = Object.values(selected).filter(s => s.sensor.interface === 'i2c');
+  const addrMap = {};
+  const conflicts = new Set();
+  i2cSensors.forEach(({ sensor }) => {
+    if (!sensor.i2cAddr) return;
+    if (addrMap[sensor.i2cAddr]) {
+      conflicts.add(sensor.id);
+      conflicts.add(addrMap[sensor.i2cAddr]);
+    } else {
+      addrMap[sensor.i2cAddr] = sensor.id;
+    }
+  });
+  return conflicts;
+}
+
+// ─── Render Sensor Cards ─────────────────────────────────────────────────────
+function renderCards() {
+  const grid = document.getElementById('sensorGrid');
+  const conflicts = getConflicts();
+
+  grid.innerHTML = '';
+  SENSORS.forEach(sensor => {
+    const isSelected = !!selected[sensor.id];
+    const isConflict = conflicts.has(sensor.id);
+    const pinVal = selected[sensor.id]?.pin ?? sensor.defaultPin;
+
+    const card = document.createElement('div');
+    card.className = `sensor-card${isSelected ? ' selected' : ''}${isConflict ? ' conflict' : ''}`;
+    card.id = `card-${sensor.id}`;
+
+    const tagHtml = `<span class="tag ${sensor.interface}">${sensor.interface.toUpperCase()}</span>
+                     <span class="tag">${sensor.metric}</span>
+                     ${sensor.i2cAddr ? `<span class="tag i2c">Addr ${sensor.i2cAddr}</span>` : ''}`;
+
+    let pinHtml = '';
+    if (sensor.pinOptions) {
+      const opts = sensor.pinOptions.map(p => `<option value="${p}"${p == pinVal ? ' selected' : ''}>D${p}</option>`).join('');
+      pinHtml = `<div class="pin-config" id="pin-${sensor.id}">
+        <label>${sensor.pinLabel}</label>
+        <select onchange="setPin('${sensor.id}', this.value)" onclick="event.stopPropagation()">
+          ${opts}
+        </select>
+      </div>`;
+    } else {
+      pinHtml = `<div class="pin-config" id="pin-${sensor.id}">
+        <label>${sensor.pinLabel}</label>
+        <input type="text" value="${pinVal}" readonly style="opacity:0.5; cursor:not-allowed;">
+      </div>`;
+    }
+
+    card.innerHTML = `
+      <div class="check-icon">✓</div>
+      <div class="card-top">
+        <div class="sensor-icon" style="background: ${sensor.iconBg}">${sensor.icon}</div>
+        <div>
+          <h3>${sensor.name}</h3>
+          <div class="sensor-desc">${sensor.desc}</div>
+        </div>
+      </div>
+      <div class="sensor-meta">${tagHtml}</div>
+      <div class="conflict-badge">⚠️ I2C address conflict — use an I2C multiplexer (TCA9548A)</div>
+      ${pinHtml}
+    `;
+    card.addEventListener('click', () => toggleSensor(sensor.id));
+    grid.appendChild(card);
+  });
+}
+
+function toggleSensor(id) {
+  const sensor = SENSORS.find(s => s.id === id);
+  if (selected[id]) {
+    delete selected[id];
+  } else {
+    selected[id] = { sensor, pin: sensor.defaultPin };
+  }
+  renderCards();
+  updatePanel();
+  generateCode();
+}
+
+function setPin(id, val) {
+  if (selected[id]) selected[id].pin = val;
+  generateCode();
+}
+
+function clearAll() {
+  Object.keys(selected).forEach(k => delete selected[k]);
+  renderCards();
+  updatePanel();
+  generateCode();
+}
+
+// ─── Sidebar panel update ────────────────────────────────────────────────────
+function updatePanel() {
+  const list = document.getElementById('selectedList');
+  const count = document.getElementById('countBadge');
+  const warn = document.getElementById('warningsBox');
+  const conflicts = getConflicts();
+
+  const items = Object.values(selected);
+  count.textContent = items.length;
+
+  list.innerHTML = items.length === 0
+    ? '<div style="color:var(--muted);font-size:13px;">No sensors selected yet</div>'
+    : items.map(({ sensor }) => `
+        <div class="selected-item">
+          <div class="dot" style="background:${conflicts.has(sensor.id) ? 'var(--danger)' : 'var(--success)'}"></div>
+          ${sensor.icon} ${sensor.name}
+        </div>`).join('');
+
+  // Warnings
+  const warnItems = [];
+  if (conflicts.size > 0) {
+    warnItems.push(`<div class="warning-item error">⛔ I2C address conflict detected! Two or more sensors share the same address. Use a TCA9548A I2C multiplexer to resolve.</div>`);
+  }
+
+  const needsWire = items.some(s => s.sensor.interface === 'i2c');
+  if (needsWire && items.length > 1) {
+    warnItems.push(`<div class="warning-item">💡 Multiple I2C devices share SDA (A4) and SCL (A5) on Arduino Uno. Connect all I2C sensors to the same 2 pins.</div>`);
+  }
+
+  const libs = [...new Set(items.flatMap(s => s.sensor.libraries))];
+  if (libs.length > 0) {
+    warnItems.push(`<div class="warning-item" style="color:var(--accent2);border-color:rgba(78,205,196,0.3);background:rgba(78,205,196,0.06);">📦 Libraries to install in Arduino IDE:<br><strong>${libs.join(' &nbsp;|&nbsp; ')}</strong></div>`);
+  }
+
+  warn.innerHTML = warnItems.join('');
+  document.getElementById('btnDownload').disabled = items.length === 0;
+}
+
+// ─── Code Generator ──────────────────────────────────────────────────────────
+function generateCode() {
+  const items = Object.values(selected);
+  if (items.length === 0) {
+    document.getElementById('codePreview').textContent = '// Select sensors to see generated code...';
+    document.getElementById('lineCount').textContent = '0 lines';
+    return;
+  }
+
+  const code = buildIno(items);
+  const lines = code.split('\n');
+  document.getElementById('lineCount').textContent = lines.length + ' lines';
+
+  // Simple syntax highlight
+  const highlighted = code
+    .replace(/\/\/.*/g, m => `<span class="cmt">${m}</span>`)
+    .replace(/\b(#include|#define|void|float|int|long|byte|bool|const|if|else|return|for|while|unsigned)\b/g, m => `<span class="kw">${m}</span>`)
+    .replace(/"([^"]+)"/g, m => `<span class="str">${m}</span>`);
+
+  document.getElementById('codePreview').innerHTML = highlighted;
+}
+
+function buildIno(items) {
+  const now = new Date().toLocaleString();
+  const sensorList = items.map(s => `//   - ${s.sensor.name} (${s.sensor.sensorName})`).join('\n');
+  const libs = [...new Set(items.flatMap(s => s.sensor.libraries))];
+  const libInstall = items.map(s => `//   ${s.sensor.name}: ${s.sensor.libraryInstall}`).join('\n');
+
+  const globalCode = items.map(s => s.sensor.code(s.pin)).join('');
+  const setupCode  = items.map(s => s.sensor.setupCode(s.pin)).join('\n');
+  const loopCode   = items.map(s => s.sensor.loopCode(s.pin)).join('');
+
+  return `/*
+ * SensorSender.ino  —  Auto-Generated by SensorSender Code Adjuster
+ * Generated:  ${now}
+ *
+ * Active Sensors:
+${sensorList}
+ *
+ * REQUIRED LIBRARIES (install via Arduino IDE > Tools > Manage Libraries):
+${libInstall}
+ *
+ * OUTPUT FORMAT:  DATA:SensorName:Value
+ *                 ERROR:SensorName:DISCONNECTED
+ *
+ * BAUD RATE: 9600 (must match index.js SerialPort config)
+ */
+${globalCode}
+
+void setup() {
+  Serial.begin(9600);
+  Serial.println("SYS_STATUS:PWR=ON:MODE=Ready");
+
+${setupCode}
+}
+
+void loop() {
+${loopCode}
+
+  // The loop stays non-blocking — no delay() calls used.
+  // Add other logic here freely without stalling the serial output.
+}
+`;
+}
+
+// ─── Download ────────────────────────────────────────────────────────────────
+function download() {
+  const items = Object.values(selected);
+  if (items.length === 0) return;
+
+  const code = buildIno(items);
+  const blob = new Blob([code], { type: 'text/plain' });
+  const url = URL.createObjectURL(blob);
+
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = 'SensorSender.ino';
+  a.click();
+  URL.revokeObjectURL(url);
+}
+
+// ─── Init ────────────────────────────────────────────────────────────────────
+renderCards();
+updatePanel();
+generateCode();
+
+// Pre-select DS18B20 by default (current hardware)
+toggleSensor('DS18B20');
+</script>
+</body>
+</html>
