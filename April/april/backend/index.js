@@ -683,6 +683,64 @@ app.post('/api/sensor/upload', async (req, res) => {
     }
 });
 
+app.post('/api/sensor/bulk-upload', async (req, res) => {
+    const { sensor_type, readings } = req.body;
+
+    if (!sensor_type || !Array.isArray(readings) || readings.length === 0) {
+        return res.status(400).json({ success: false, message: 'Missing sensor readings' });
+    }
+
+    const validReadings = readings
+        .filter(row => row && row.metric && row.value !== undefined && row.value !== null)
+        .map(row => [sensor_type, row.metric, Number(row.value), row.unit || '']);
+
+    if (validReadings.length === 0) {
+        return res.status(400).json({ success: false, message: 'No valid readings' });
+    }
+
+    try {
+        await pool.query(
+            'INSERT INTO vitals (sensor_type, metric, value, unit) VALUES ?',
+            [validReadings]
+        );
+
+        await pool.query(
+            'INSERT INTO sensors (sensor_type, status) VALUES (?, ?) ON DUPLICATE KEY UPDATE status = ?, last_seen = CURRENT_TIMESTAMP',
+            [sensor_type, 'ONLINE', 'ONLINE']
+        );
+
+        const latest = {
+            timestamp: new Date().toISOString(),
+            status: 'ACTIVE',
+            heart_rate: 0,
+            spo2: 0,
+            body_temp: 0,
+            bp_sys: 0,
+            bp_dia: 0,
+            blood_pressure: ''
+        };
+
+        for (const [_, metric, value] of validReadings) {
+            const normalized = String(metric || '').toLowerCase();
+            if (normalized.includes('heart') || normalized.includes('bpm')) latest.heart_rate = Math.round(value);
+            else if (normalized.includes('spo2') || normalized.includes('oxygen')) latest.spo2 = Math.round(value);
+            else if (normalized.includes('temp')) latest.body_temp = Number(value.toFixed(1));
+            else if (normalized.includes('bp_sys') || normalized.includes('systolic')) latest.bp_sys = Math.round(value);
+            else if (normalized.includes('bp_dia') || normalized.includes('diastolic')) latest.bp_dia = Math.round(value);
+        }
+
+        if (latest.bp_sys > 0 && latest.bp_dia > 0) {
+            latest.blood_pressure = `${latest.bp_sys}/${latest.bp_dia}`;
+        }
+
+        io.emit('vitals_update', latest);
+        res.json({ success: true, message: 'Sensor readings accepted', latest });
+    } catch (err) {
+        console.error(`[SENSOR_BULK_UPLOAD_ERROR] ${err.message}`);
+        res.status(500).json({ success: false, message: 'Error saving sensor readings' });
+    }
+});
+
 app.get('/api/sensor/latest', async (req, res) => {
     try {
         const [rows] = await pool.query("SELECT * FROM vitals ORDER BY timestamp DESC LIMIT 50");
