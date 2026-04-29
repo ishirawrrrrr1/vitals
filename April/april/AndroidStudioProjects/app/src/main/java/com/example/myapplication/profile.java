@@ -13,6 +13,13 @@ import androidx.appcompat.widget.Toolbar;
 import androidx.drawerlayout.widget.DrawerLayout;
 
 import com.google.android.material.navigation.NavigationView;
+import com.example.myapplication.network.RetrofitClient;
+import com.example.myapplication.network.UserProfileResponse;
+import com.example.myapplication.network.VitalSignsApi;
+
+import retrofit2.Call;
+import retrofit2.Callback;
+import retrofit2.Response;
 
 public class profile extends AppCompatActivity {
 
@@ -51,11 +58,9 @@ public class profile extends AppCompatActivity {
         android.content.SharedPreferences sharedPreferences = getSharedPreferences(LoginActivity.PREFS_NAME, MODE_PRIVATE);
         String name = sharedPreferences.getString(LoginActivity.KEY_USER_NAME, "Precilla");
         String email = sharedPreferences.getString(LoginActivity.KEY_EMAIL, "No Email");
-        String role = sharedPreferences.getString("role", "Patient");
-        
-        // Mock data for demo
-        String age = "62";
-        String gender = "Female";
+        String role = sharedPreferences.getString(LoginActivity.KEY_ROLE, "Patient");
+        String age = sharedPreferences.getString(LoginActivity.KEY_AGE, "");
+        String gender = sharedPreferences.getString(LoginActivity.KEY_GENDER, "");
 
         if (tvProfileName != null) tvProfileName.setText(name);
         if (tvProfileEmail != null) tvProfileEmail.setText(email);
@@ -66,6 +71,8 @@ public class profile extends AppCompatActivity {
             if (tvProfileAge != null) tvProfileAge.setText(age);
             if (tvProfileGender != null) tvProfileGender.setText(gender);
         }
+
+        loadProfileFromBackend(sharedPreferences);
 
         if (toolbar != null) {
             setSupportActionBar(toolbar);
@@ -106,6 +113,38 @@ public class profile extends AppCompatActivity {
                 Toast.makeText(this, "Secure Reset Tool: Check registered email for link.", Toast.LENGTH_LONG).show();
             });
         }
+    }
+
+    private void loadProfileFromBackend(android.content.SharedPreferences sharedPreferences) {
+        VitalSignsApi api = RetrofitClient.getClient(getApplicationContext()).create(VitalSignsApi.class);
+        api.getProfile().enqueue(new Callback<UserProfileResponse>() {
+            @Override
+            public void onResponse(Call<UserProfileResponse> call, Response<UserProfileResponse> response) {
+                if (!response.isSuccessful() || response.body() == null || response.body().user == null) return;
+
+                UserProfileResponse.User user = response.body().user;
+                sharedPreferences.edit()
+                        .putInt(LoginActivity.KEY_USER_ID, user.id)
+                        .putString(LoginActivity.KEY_USER_NAME, user.username)
+                        .putString(LoginActivity.KEY_EMAIL, user.email)
+                        .putString(LoginActivity.KEY_ROLE, user.role)
+                        .putString(LoginActivity.KEY_AGE, user.age != null ? user.age : "")
+                        .putString(LoginActivity.KEY_GENDER, user.gender != null ? user.gender : "")
+                        .putString(LoginActivity.KEY_STROKE, user.stroke_duration != null ? user.stroke_duration : "")
+                        .apply();
+
+                if (tvProfileName != null) tvProfileName.setText(user.username);
+                if (tvProfileEmail != null) tvProfileEmail.setText(user.email);
+                if (tvProfileRole != null) tvProfileRole.setText(user.role);
+                if (tvProfileAge != null) tvProfileAge.setText(user.age != null ? user.age : "");
+                if (tvProfileGender != null) tvProfileGender.setText(user.gender != null ? user.gender : "");
+            }
+
+            @Override
+            public void onFailure(Call<UserProfileResponse> call, Throwable t) {
+                Toast.makeText(profile.this, "Profile sync unavailable", Toast.LENGTH_SHORT).show();
+            }
+        });
     }
 
     @Override

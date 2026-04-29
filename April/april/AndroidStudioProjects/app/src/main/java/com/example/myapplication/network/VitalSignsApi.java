@@ -27,8 +27,17 @@ public interface VitalSignsApi {
     @POST("api/auth/register")
     Call<SignupResponse> signup(@Body SignupRequest request);
 
+    @GET("api/auth/me")
+    Call<UserProfileResponse> getProfile();
+
     @POST("api/sessions/start")
     Call<SessionStartResponse> startSession(@Body SessionStartRequest request);
+
+    @POST("api/sessions/{id}/complete")
+    Call<SessionStartResponse> completeSession(@Path("id") int sessionId, @Body SessionCompleteRequest request);
+
+    @GET("api/progress/summary/{userId}")
+    Call<ProgressSummaryResponse> getProgressSummary(@Path("userId") int userId);
 
     @GET("api/sessions/current/{userId}")
     Call<SessionCurrentResponse> getCurrentSession(@Path("userId") int userId);

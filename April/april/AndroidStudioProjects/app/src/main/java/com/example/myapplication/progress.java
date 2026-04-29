@@ -24,6 +24,7 @@ import androidx.cardview.widget.CardView;
 import androidx.drawerlayout.widget.DrawerLayout;
 
 import com.example.myapplication.network.RetrofitClient;
+import com.example.myapplication.network.ProgressSummaryResponse;
 import com.example.myapplication.network.VitalSignsApi;
 import com.example.myapplication.network.VitalSign;
 import com.google.android.material.navigation.NavigationView;
@@ -62,6 +63,7 @@ public class progress extends AppCompatActivity {
     private TextView tvHealthSummary, tvWeeklyTip;
 
     private List<VitalSign> allVitals = new ArrayList<>();
+    private List<ProgressSummaryResponse.SessionItem> cloudSessions = new ArrayList<>();
     private java.util.concurrent.ExecutorService databaseExecutor = java.util.concurrent.Executors.newSingleThreadExecutor();
 
     @Override
@@ -289,27 +291,60 @@ public class progress extends AppCompatActivity {
     }
 
     private void fetchVitalHistory() {
-        databaseExecutor.execute(() -> {
-            List<LocalSession> sessions = vitalSignDao.getSessionsByUserId(userId);
-            if (sessions == null || sessions.isEmpty()) return;
+        VitalSignsApi api = RetrofitClient.getClient(getApplicationContext()).create(VitalSignsApi.class);
+        api.getProgressSummary(userId).enqueue(new Callback<ProgressSummaryResponse>() {
+            @Override
+            public void onResponse(Call<ProgressSummaryResponse> call, Response<ProgressSummaryResponse> response) {
+                if (!response.isSuccessful() || response.body() == null || response.body().summary == null) {
+                    Toast.makeText(progress.this, "Cloud progress unavailable", Toast.LENGTH_SHORT).show();
+                    return;
+                }
 
-            float sumHII = 0;
-            long totalMins = 0;
-            for (LocalSession s : sessions) {
-                sumHII += s.hiiIndex;
-                totalMins += s.durationMins;
+                ProgressSummaryResponse body = response.body();
+                cloudSessions = body.sessions != null ? body.sessions : new ArrayList<>();
+                if (tvAvgHII != null) tvAvgHII.setText(String.format(Locale.getDefault(), "%.1f", body.summary.avg_hii));
+                if (tvTotalTime != null) tvTotalTime.setText(body.summary.total_mins + "m");
+                if (tvProgressSubtitle != null) tvProgressSubtitle.setText(body.summary.session_count + " cloud sessions");
+                if (tvHealthSummary != null) tvHealthSummary.setText("Cloud history active. Data is loaded from Railway MySQL.");
+                if (tvWeeklyTip != null) tvWeeklyTip.setText(body.summary.session_count > 0
+                        ? "Latest records are synced with the backend database."
+                        : "No completed cloud sessions yet. Start monitoring to build progress history.");
             }
-            final float avgHII = sumHII / sessions.size();
-            final long total = totalMins;
 
-            runOnUiThread(() -> {
-                if (tvAvgHII != null) tvAvgHII.setText(String.format(Locale.getDefault(), "%.1f", avgHII));
-                if (tvTotalTime != null) tvTotalTime.setText(total + "m");
-            });
+            @Override
+            public void onFailure(Call<ProgressSummaryResponse> call, Throwable t) {
+                Toast.makeText(progress.this, "Backend unavailable for progress", Toast.LENGTH_SHORT).show();
+            }
         });
     }
 
     private void filterVitalsByDate(String date) {
+        if (cloudSessions != null && !cloudSessions.isEmpty()) {
+            for (ProgressSummaryResponse.SessionItem s : cloudSessions) {
+                if (s.created_at != null && s.created_at.startsWith(date)) {
+                    String report = "VITALS HEALTH SYSTEM - CLOUD SESSION SUMMARY\n" +
+                            "====================================\n" +
+                            "Patient Identity: " + (s.patient_name != null ? s.patient_name : userName) + "\n" +
+                            "Record Date: " + s.created_at + "\n" +
+                            "Session Mode: " + (s.intensity != null ? s.intensity : "Standard") + "\n" +
+                            "Status: " + s.status + "\n" +
+                            "Duration: " + s.duration_mins + " minutes\n" +
+                            "Recovery Progress: " + String.format(Locale.getDefault(), "%.1f/10.0", s.hii_index) + "\n" +
+                            "Clinical Summary: " + (s.clinical_summary != null ? s.clinical_summary : "Stored in Railway MySQL") + "\n" +
+                            "====================================";
+
+                    new com.google.android.material.dialog.MaterialAlertDialogBuilder(this)
+                            .setTitle("Cloud Session Record")
+                            .setMessage(report)
+                            .setPositiveButton("Close", null)
+                            .show();
+                    return;
+                }
+            }
+            Toast.makeText(this, "No cloud records for " + date + ".", Toast.LENGTH_LONG).show();
+            return;
+        }
+
         databaseExecutor.execute(() -> {
             List<LocalSession> sessions = vitalSignDao.getSessionsByUserId(userId);
             // Use UTC/Standard Comparison to avoid DST/Timezone shifts in the format

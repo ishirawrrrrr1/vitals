@@ -144,7 +144,7 @@ public class LoginActivity extends AppCompatActivity {
         });
 
         if (btnGuestLogin != null) {
-            btnGuestLogin.setOnClickListener(v -> performGuestLogin());
+            btnGuestLogin.setVisibility(View.GONE);
         }
 
         seedPrecillaLegacy();
@@ -341,7 +341,9 @@ public class LoginActivity extends AppCompatActivity {
 
             @Override
             public void onFailure(Call<LoginResponse> call, Throwable t) {
-                checkOfflineLogin(email, password);
+                login.setEnabled(true);
+                login.setText(R.string.login);
+                Toast.makeText(LoginActivity.this, "Backend unavailable. Please check Railway connection.", Toast.LENGTH_LONG).show();
             }
         });
     }

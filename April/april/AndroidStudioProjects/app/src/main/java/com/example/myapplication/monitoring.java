@@ -447,7 +447,29 @@ public class monitoring extends AppCompatActivity {
         final String durationStr = spinnerDuration.getSelectedItem().toString();
         final int mins = durationStr.contains("30") ? 30 : (durationStr.contains("20") ? 20 : 10);
         final String modeStr = spinnerMode.getSelectedItem().toString();
+        final String combinedIntensity = intensity + " [" + modeStr + "]";
         
+        VitalSignsApi api = RetrofitClient.getClient(getApplicationContext()).create(VitalSignsApi.class);
+        api.startSession(new SessionStartRequest(userId, combinedIntensity, mins, selectedPatientName))
+                .enqueue(new Callback<SessionStartResponse>() {
+                    @Override
+                    public void onResponse(Call<SessionStartResponse> call, Response<SessionStartResponse> response) {
+                        if (!response.isSuccessful() || response.body() == null || !response.body().success) {
+                            Toast.makeText(monitoring.this, "Cloud session start failed", Toast.LENGTH_LONG).show();
+                            return;
+                        }
+                        currentSessionId = response.body().session_id;
+                        beginSessionAfterCloudStart(combinedIntensity, mins, forceLevel, modeLevel);
+                    }
+
+                    @Override
+                    public void onFailure(Call<SessionStartResponse> call, Throwable t) {
+                        Toast.makeText(monitoring.this, "Backend unavailable. Session not started.", Toast.LENGTH_LONG).show();
+                    }
+                });
+    }
+
+    private void beginSessionAfterCloudStart(String combinedIntensity, int mins, int forceLevel, int modeLevel) {
         databaseExecutor.execute(() -> {
             // CLINICAL POLICY: Overlap if session exists today
             java.text.SimpleDateFormat sdf = new java.text.SimpleDateFormat("yyyy-MM-dd", java.util.Locale.US);
@@ -463,13 +485,10 @@ public class monitoring extends AppCompatActivity {
                 }
             }
 
-            // Store Combined Metadata: Intensity + Training Mode
-            String combinedIntensity = intensity + " [" + modeStr + "]";
             currentLocalSession = new LocalSession(userId, selectedPatientName, combinedIntensity, mins, System.currentTimeMillis());
             currentLocalSession.gender = selectedGender;
             currentLocalSession.ageRange = selectedAge;
             currentLocalSession.strokeDuration = selectedStroke;
-            currentSessionId = (int) vitalSignDao.insertSession(currentLocalSession);
             currentLocalSession.id = currentSessionId;
 
             runOnUiThread(() -> {
@@ -527,6 +546,18 @@ public class monitoring extends AppCompatActivity {
         currentLocalSession.endTime = System.currentTimeMillis();
         currentLocalSession.hiiIndex = recoveryScore;
         sendHardwareCommand("CMD:STOP");
+        VitalSignsApi api = RetrofitClient.getClient(getApplicationContext()).create(VitalSignsApi.class);
+        api.completeSession(currentSessionId, new SessionCompleteRequest(recoveryScore, "Session completed from Android monitoring."))
+                .enqueue(new Callback<SessionStartResponse>() {
+                    @Override
+                    public void onResponse(Call<SessionStartResponse> call, Response<SessionStartResponse> response) {
+                    }
+
+                    @Override
+                    public void onFailure(Call<SessionStartResponse> call, Throwable t) {
+                        Toast.makeText(monitoring.this, "Cloud completion sync failed", Toast.LENGTH_SHORT).show();
+                    }
+                });
         databaseExecutor.execute(() -> {
             vitalSignDao.updateSession(currentLocalSession);
             runOnUiThread(() -> showClinicalImprovement(recoveryScore));

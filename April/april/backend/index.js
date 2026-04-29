@@ -363,6 +363,20 @@ app.put('/api/auth/profile', verifyToken, async (req, res) => {
     }
 });
 
+app.get('/api/auth/me', verifyToken, async (req, res) => {
+    try {
+        const [rows] = await pool.query(
+            'SELECT id, username, email, role, age, gender, stroke_duration FROM users WHERE id = ?',
+            [req.user.id]
+        );
+        if (rows.length === 0) return res.status(404).json({ success: false, message: 'User not found' });
+        res.json({ success: true, user: rows[0] });
+    } catch (err) {
+        console.error('[PROFILE_ME_ERROR]', err);
+        res.status(500).json({ success: false, message: 'Error fetching profile' });
+    }
+});
+
 // Profile Photo Upload (Patient Accounts)
 app.post('/api/auth/profile-photo', verifyToken, upload.single('photo'), async (req, res) => {
     if (!req.file) return res.status(400).json({ message: 'No photo provided' });
@@ -896,6 +910,71 @@ app.post('/api/sessions/start', verifyToken, async (req, res) => {
     } catch (err) {
         console.error('[SESSION_ERROR]', err);
         res.status(500).json({ success: false, error: err.message });
+    }
+});
+
+app.post('/api/sessions/:id/complete', verifyToken, async (req, res) => {
+    const sessionId = parseInt(req.params.id);
+    const hiiIndex = Number(req.body?.hii_index || req.body?.hiiIndex || 0);
+    const clinicalSummary = req.body?.clinical_summary || req.body?.clinicalSummary || null;
+
+    if (!sessionId) {
+        return res.status(400).json({ success: false, message: 'Invalid session id' });
+    }
+
+    try {
+        const [result] = await pool.query(
+            `UPDATE monitoring_sessions
+             SET status = 'COMPLETED',
+                 ended_at = CURRENT_TIMESTAMP,
+                 hii_index = ?,
+                 clinical_summary = ?
+             WHERE id = ? AND user_id = ?`,
+            [hiiIndex, clinicalSummary, sessionId, req.user.id]
+        );
+
+        if (result.affectedRows === 0) {
+            return res.status(404).json({ success: false, message: 'Session not found' });
+        }
+
+        res.json({ success: true, session_id: sessionId, status: 'COMPLETED' });
+    } catch (err) {
+        console.error('[SESSION_COMPLETE_ERROR]', err);
+        res.status(500).json({ success: false, message: err.message });
+    }
+});
+
+app.get('/api/progress/summary/:userId', verifyToken, async (req, res) => {
+    const userId = parseInt(req.params.userId);
+    if (req.user.role !== 'admin' && req.user.id !== userId) {
+        return res.status(403).json({ success: false, message: 'Forbidden' });
+    }
+
+    try {
+        const [rows] = await pool.query(
+            `SELECT
+                COUNT(*) AS session_count,
+                COALESCE(ROUND(AVG(NULLIF(hii_index, 0)), 1), 0) AS avg_hii,
+                COALESCE(SUM(duration_mins), 0) AS total_mins,
+                MAX(created_at) AS last_session_at
+             FROM monitoring_sessions
+             WHERE user_id = ?`,
+            [userId]
+        );
+
+        const [recent] = await pool.query(
+            `SELECT id, patient_name, intensity, duration_mins, status, hii_index, created_at, ended_at, clinical_summary
+             FROM monitoring_sessions
+             WHERE user_id = ?
+             ORDER BY created_at DESC
+             LIMIT 20`,
+            [userId]
+        );
+
+        res.json({ success: true, summary: rows[0], sessions: recent });
+    } catch (err) {
+        console.error('[PROGRESS_SUMMARY_ERROR]', err);
+        res.status(500).json({ success: false, message: err.message });
     }
 });
 
