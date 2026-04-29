@@ -1349,6 +1349,7 @@ const startServer = async () => {
     try {
         const connection = await mysql.createConnection({
             host: dbConfig.host,
+            port: dbConfig.port,
             user: dbConfig.user,
             password: dbConfig.password
         });
@@ -1356,6 +1357,20 @@ const startServer = async () => {
         await connection.query(`CREATE DATABASE IF NOT EXISTS ${dbConfig.database}`);
         await connection.end();
         pool = mysql.createPool(dbConfig);
+
+        await pool.query(`
+          CREATE TABLE IF NOT EXISTS monitoring_sessions (
+            id INT AUTO_INCREMENT PRIMARY KEY,
+            user_id INT NOT NULL,
+            intensity VARCHAR(10) DEFAULT 'MED',
+            duration_mins INT DEFAULT 5,
+            status VARCHAR(20) DEFAULT 'INITIAL',
+            session_role ENUM('Admin', 'Technician') DEFAULT 'Technician',
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            ended_at TIMESTAMP NULL
+          )
+        `);
+
         // Ensure monitoring_sessions has HII and Phase columns
         await pool.query("ALTER TABLE monitoring_sessions ADD COLUMN IF NOT EXISTS baseline_vitals JSON DEFAULT NULL");
         await pool.query("ALTER TABLE monitoring_sessions ADD COLUMN IF NOT EXISTS outcome_vitals JSON DEFAULT NULL");
