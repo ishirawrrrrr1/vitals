@@ -882,12 +882,14 @@ app.post('/api/sessions/start', verifyToken, async (req, res) => {
     const patientName = req.body.patient_name || req.body.patientName || 'Unknown Patient';
     
     try {
+        const [idRows] = await pool.query('SELECT COALESCE(MAX(id), 0) + 1 AS nextId FROM monitoring_sessions');
+        const sessionId = idRows[0]?.nextId || 1;
+
         // 1. Create entry in DB
-        const [result] = await pool.query(
-            "INSERT INTO monitoring_sessions (user_id, patient_name, intensity, duration_mins, status, session_role) VALUES (?, ?, ?, ?, 'INITIAL', ?)",
-            [userId, patientName, intensity, durationMins, sessionRole]
+        await pool.query(
+            "INSERT INTO monitoring_sessions (id, user_id, patient_name, intensity, duration_mins, status, session_role) VALUES (?, ?, ?, ?, ?, 'INITIAL', ?)",
+            [sessionId, userId, patientName, intensity, durationMins, sessionRole]
         );
-        const sessionId = result.insertId;
 
         // 2. Fetch connection mode
         const [cfg] = await pool.query("SELECT connection_mode FROM config WHERE id=1");
