@@ -1374,6 +1374,21 @@ app.get('/api/relay/commands', verifyToken, (req, res) => {
     });
 });
 
+async function addColumnIfMissing(tableName, columnName, definition) {
+    const [rows] = await pool.query(
+        `SELECT COLUMN_NAME
+         FROM INFORMATION_SCHEMA.COLUMNS
+         WHERE TABLE_SCHEMA = DATABASE()
+           AND TABLE_NAME = ?
+           AND COLUMN_NAME = ?`,
+        [tableName, columnName]
+    );
+
+    if (rows.length === 0) {
+        await pool.query(`ALTER TABLE \`${tableName}\` ADD COLUMN \`${columnName}\` ${definition}`);
+    }
+}
+
 const startServer = async () => {
     console.log("[BOOT] Starting system initialization...");
     try {
@@ -1402,18 +1417,18 @@ const startServer = async () => {
         `);
 
         // Ensure monitoring_sessions has HII and Phase columns
-        await pool.query("ALTER TABLE monitoring_sessions ADD COLUMN IF NOT EXISTS baseline_vitals JSON DEFAULT NULL");
-        await pool.query("ALTER TABLE monitoring_sessions ADD COLUMN IF NOT EXISTS outcome_vitals JSON DEFAULT NULL");
-        await pool.query("ALTER TABLE monitoring_sessions ADD COLUMN IF NOT EXISTS recovery_rate FLOAT DEFAULT NULL");
-        await pool.query("ALTER TABLE monitoring_sessions ADD COLUMN IF NOT EXISTS hii_index FLOAT DEFAULT NULL");
-        await pool.query("ALTER TABLE monitoring_sessions ADD COLUMN IF NOT EXISTS sensor_integrity VARCHAR(255) DEFAULT NULL");
+        await addColumnIfMissing('monitoring_sessions', 'baseline_vitals', 'JSON DEFAULT NULL');
+        await addColumnIfMissing('monitoring_sessions', 'outcome_vitals', 'JSON DEFAULT NULL');
+        await addColumnIfMissing('monitoring_sessions', 'recovery_rate', 'FLOAT DEFAULT NULL');
+        await addColumnIfMissing('monitoring_sessions', 'hii_index', 'FLOAT DEFAULT NULL');
+        await addColumnIfMissing('monitoring_sessions', 'sensor_integrity', 'VARCHAR(255) DEFAULT NULL');
         
         // --- [ALIGNMENT] Patient Identity Columns ---
-        await pool.query("ALTER TABLE monitoring_sessions ADD COLUMN IF NOT EXISTS patient_name VARCHAR(255) DEFAULT NULL");
-        await pool.query("ALTER TABLE monitoring_sessions ADD COLUMN IF NOT EXISTS gender VARCHAR(50) DEFAULT 'Unknown'");
-        await pool.query("ALTER TABLE monitoring_sessions ADD COLUMN IF NOT EXISTS age_range VARCHAR(50) DEFAULT NULL");
-        await pool.query("ALTER TABLE monitoring_sessions ADD COLUMN IF NOT EXISTS stroke_duration VARCHAR(100) DEFAULT NULL");
-        await pool.query("ALTER TABLE monitoring_sessions ADD COLUMN IF NOT EXISTS clinical_summary TEXT DEFAULT NULL");
+        await addColumnIfMissing('monitoring_sessions', 'patient_name', 'VARCHAR(255) DEFAULT NULL');
+        await addColumnIfMissing('monitoring_sessions', 'gender', "VARCHAR(50) DEFAULT 'Unknown'");
+        await addColumnIfMissing('monitoring_sessions', 'age_range', 'VARCHAR(50) DEFAULT NULL');
+        await addColumnIfMissing('monitoring_sessions', 'stroke_duration', 'VARCHAR(100) DEFAULT NULL');
+        await addColumnIfMissing('monitoring_sessions', 'clinical_summary', 'TEXT DEFAULT NULL');
         
         console.log("[DB_SUCCESS] Database connected and schema updated.");
 
@@ -1447,9 +1462,9 @@ const startServer = async () => {
           )
         `);
         await pool.query("ALTER TABLE users MODIFY COLUMN role VARCHAR(50) DEFAULT 'Patient'");
-        await pool.query("ALTER TABLE users ADD COLUMN IF NOT EXISTS age VARCHAR(50) DEFAULT NULL");
-        await pool.query("ALTER TABLE users ADD COLUMN IF NOT EXISTS gender VARCHAR(50) DEFAULT NULL");
-        await pool.query("ALTER TABLE users ADD COLUMN IF NOT EXISTS stroke_duration VARCHAR(100) DEFAULT NULL");
+        await addColumnIfMissing('users', 'age', 'VARCHAR(50) DEFAULT NULL');
+        await addColumnIfMissing('users', 'gender', 'VARCHAR(50) DEFAULT NULL');
+        await addColumnIfMissing('users', 'stroke_duration', 'VARCHAR(100) DEFAULT NULL');
 
         // Create default admin user if no users exist
         const result = await pool.query('SELECT COUNT(*) as count FROM users');
@@ -1513,9 +1528,9 @@ const startServer = async () => {
         `);
 
         // Add actuator state columns to vitals table
-        await pool.query("ALTER TABLE vitals ADD COLUMN IF NOT EXISTS arm_moving BOOLEAN DEFAULT FALSE");
-        await pool.query("ALTER TABLE vitals ADD COLUMN IF NOT EXISTS leg_moving BOOLEAN DEFAULT FALSE");
-        await pool.query("ALTER TABLE vitals ADD COLUMN IF NOT EXISTS glove_active BOOLEAN DEFAULT FALSE");
+        await addColumnIfMissing('vitals', 'arm_moving', 'BOOLEAN DEFAULT FALSE');
+        await addColumnIfMissing('vitals', 'leg_moving', 'BOOLEAN DEFAULT FALSE');
+        await addColumnIfMissing('vitals', 'glove_active', 'BOOLEAN DEFAULT FALSE');
 
         await pool.query(`
           CREATE TABLE IF NOT EXISTS sync_logs (
