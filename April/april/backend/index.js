@@ -1552,6 +1552,7 @@ const startServer = async () => {
         await addColumnIfMissing('users', 'age', 'VARCHAR(50) DEFAULT NULL');
         await addColumnIfMissing('users', 'gender', 'VARCHAR(50) DEFAULT NULL');
         await addColumnIfMissing('users', 'stroke_duration', 'VARCHAR(100) DEFAULT NULL');
+        await pool.query("ALTER TABLE monitoring_sessions MODIFY COLUMN intensity VARCHAR(100) DEFAULT 'MED'");
 
         // Create default admin user if no users exist
         const result = await pool.query('SELECT COUNT(*) as count FROM users');
